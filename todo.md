@@ -76,3 +76,8 @@
 - [ ] Portal do aluno: ocultar Chamada (não pode alterar presenças)
 - [ ] Link do portal do aluno visível na tela Início para o catequista compartilhar
 - [ ] Adicionar campos de áudio (link Google Drive), PDF e links externos no formulário de criação de Aulas Extras
+- [x] Portal público /portal: visualização somente-leitura sem login
+- [x] Portal: mostrar lista de Aulas (conteúdo, PDF, link de áudio)
+- [x] Portal: mostrar Aulas Extras (conteúdo, áudio, PDF, links)
+- [x] Portal: sem acesso a dados de alunos, chamada ou frequência
+- [x] Link de compartilhamento do portal na tela Início

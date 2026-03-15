@@ -2,8 +2,8 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  BookOpen, Mic, BarChart2, ChevronDown, ChevronUp,
-  Music, FileText, ExternalLink, Link as LinkIcon, Cross
+  BookOpen, Mic, ChevronDown, ChevronUp,
+  Music, FileText, ExternalLink, Link as LinkIcon, Cross, Share2, Check
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,45 +40,22 @@ type AulaExtraLink = {
   url: string;
 };
 
-type ResumoAluno = {
-  slot: number;
-  nome: string | null;
-  telefone?: string | null;
-  sacramentos?: string[];
-  presentes: number;
-  faltas: number;
-  justificadas: number;
-  total: number;
-  pct: number | null;
-};
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function pctColor(pct: number) {
-  if (pct >= 75) return "text-emerald-600";
-  if (pct >= 50) return "text-amber-600";
-  return "text-red-600";
-}
-
-function pctBg(pct: number) {
-  if (pct >= 75) return "bg-emerald-500";
-  if (pct >= 50) return "bg-amber-500";
-  return "bg-red-500";
-}
-
 // ─── Player de Áudio ──────────────────────────────────────────────────────────
 function AudioPlayer({ url, nome }: { url: string; nome: string | null }) {
   const isGoogleDrive = url.includes("drive.google.com");
   if (isGoogleDrive) {
     return (
       <a href={url} target="_blank" rel="noopener noreferrer"
-        className="flex items-center gap-2 text-sm text-blue-600 hover:underline">
-        <ExternalLink className="w-4 h-4" /> Ouvir no Google Drive
+        className="flex items-center gap-2 p-2.5 rounded-xl bg-blue-50 border border-blue-200 text-sm text-blue-700 hover:bg-blue-100 transition-colors font-medium">
+        <Music className="w-4 h-4 flex-shrink-0" />
+        <span className="flex-1">{nome ?? "Ouvir áudio"}</span>
+        <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
       </a>
     );
   }
   return (
-    <div className="space-y-1">
-      {nome && <p className="text-xs text-muted-foreground">{nome}</p>}
+    <div className="space-y-1.5">
+      {nome && <p className="text-xs text-muted-foreground font-medium">{nome}</p>}
       <audio controls className="w-full h-10" src={url}>
         Seu navegador não suporta áudio.
       </audio>
@@ -91,62 +68,120 @@ function AbasAulas() {
   const { data: aulas = [], isLoading } = trpc.aulas.list.useQuery();
   const [expanded, setExpanded] = useState<number | null>(null);
 
-  if (isLoading) return <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-14 rounded-xl bg-muted animate-pulse" />)}</div>;
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {[1, 2, 3, 4, 5].map(i => (
+          <div key={i} className="h-16 rounded-2xl bg-muted animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  const aulasComConteudo = (aulas as Aula[]).filter(a => a.descricao || a.audioUrl || a.pdfUrl);
+  const aulasSemConteudo = (aulas as Aula[]).filter(a => !a.descricao && !a.audioUrl && !a.pdfUrl);
 
   return (
-    <div className="space-y-2">
-      {(aulas as Aula[]).map((aula) => {
-        const isOpen = expanded === aula.id;
-        const hasContent = aula.descricao || aula.audioUrl || aula.pdfUrl;
-        return (
-          <Card key={aula.id} className={cn("border transition-all", isOpen ? "border-blue-300 shadow-sm" : "border-border")}>
-            <CardContent className="p-0">
-              <button className="w-full p-3 flex items-center gap-3 text-left"
-                onClick={() => setExpanded(isOpen ? null : aula.id)}>
-                <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-bold text-blue-700">{aula.numero}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">Aula {aula.numero}</p>
-                  <p className="text-xs text-muted-foreground">{aula.data}</p>
-                </div>
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  {aula.audioUrl && <Music className="w-3.5 h-3.5 text-emerald-500" />}
-                  {aula.pdfUrl && <FileText className="w-3.5 h-3.5 text-rose-500" />}
-                  {hasContent && (isOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />)}
-                </div>
-              </button>
-              {isOpen && hasContent && (
-                <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
-                  {aula.descricao && (
-                    <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Conteúdo da Aula</p>
-                      <p className="text-sm text-foreground whitespace-pre-wrap">{aula.descricao}</p>
+    <div className="space-y-3">
+      {/* Aulas com conteúdo */}
+      {aulasComConteudo.length > 0 && (
+        <div className="space-y-2">
+          {aulasComConteudo.map((aula) => {
+            const isOpen = expanded === aula.id;
+            return (
+              <Card key={aula.id} className={cn(
+                "border-2 transition-all overflow-hidden",
+                isOpen ? "border-blue-400 shadow-md" : "border-border hover:border-blue-200"
+              )}>
+                <CardContent className="p-0">
+                  <button className="w-full p-4 flex items-center gap-3 text-left"
+                    onClick={() => setExpanded(isOpen ? null : aula.id)}>
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0 shadow-sm">
+                      <span className="text-sm font-bold text-white">{aula.numero}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground">Aula {aula.numero}</p>
+                      <p className="text-xs text-muted-foreground">{aula.data}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      {aula.audioUrl && (
+                        <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
+                          <Music className="w-2.5 h-2.5 text-emerald-600" />
+                        </span>
+                      )}
+                      {aula.pdfUrl && (
+                        <span className="w-5 h-5 rounded-full bg-rose-100 flex items-center justify-center">
+                          <FileText className="w-2.5 h-2.5 text-rose-600" />
+                        </span>
+                      )}
+                      {isOpen
+                        ? <ChevronUp className="w-4 h-4 text-blue-500 ml-1" />
+                        : <ChevronDown className="w-4 h-4 text-muted-foreground ml-1" />}
+                    </div>
+                  </button>
+                  {isOpen && (
+                    <div className="px-4 pb-4 space-y-3 border-t border-blue-100 pt-3 bg-blue-50/30">
+                      {aula.descricao && (
+                        <div>
+                          <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1.5">Conteúdo da Aula</p>
+                          <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{aula.descricao}</p>
+                        </div>
+                      )}
+                      {aula.audioUrl && (
+                        <div>
+                          <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1.5">Áudio</p>
+                          <AudioPlayer url={aula.audioUrl} nome={aula.audioNome} />
+                        </div>
+                      )}
+                      {aula.pdfUrl && (
+                        <div>
+                          <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1.5">Material</p>
+                          <a href={aula.pdfUrl} target="_blank" rel="noopener noreferrer"
+                            className="flex items-center gap-2 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-700 hover:bg-rose-100 transition-colors">
+                            <FileText className="w-4 h-4 flex-shrink-0" />
+                            <span className="flex-1 truncate font-medium">{aula.pdfNome ?? "Material da aula"}</span>
+                            <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
+                          </a>
+                        </div>
+                      )}
                     </div>
                   )}
-                  {aula.audioUrl && (
-                    <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Áudio</p>
-                      <AudioPlayer url={aula.audioUrl} nome={aula.audioNome} />
-                    </div>
-                  )}
-                  {aula.pdfUrl && (
-                    <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Material</p>
-                      <a href={aula.pdfUrl} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-2 p-2 rounded-lg bg-rose-50 border border-rose-200 text-sm text-rose-700 hover:bg-rose-100 transition-colors">
-                        <FileText className="w-4 h-4 flex-shrink-0" />
-                        <span className="flex-1 truncate">{aula.pdfNome ?? "Material da aula"}</span>
-                        <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-                      </a>
-                    </div>
-                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Aulas sem conteúdo ainda */}
+      {aulasSemConteudo.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+            Próximas aulas
+          </p>
+          <div className="space-y-1.5">
+            {aulasSemConteudo.map((aula) => (
+              <div key={aula.id}
+                className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 border border-border/50">
+                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-bold text-muted-foreground">{aula.numero}</span>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        );
-      })}
+                <div>
+                  <p className="text-sm text-muted-foreground">Aula {aula.numero}</p>
+                  <p className="text-xs text-muted-foreground/70">{aula.data}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {(aulas as Aula[]).length === 0 && (
+        <div className="text-center py-16 text-muted-foreground">
+          <BookOpen className="w-14 h-14 mx-auto mb-3 opacity-20" />
+          <p className="text-sm font-medium">Nenhuma aula disponível ainda.</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -156,13 +191,22 @@ function AbasExtras() {
   const { data: aulas = [], isLoading } = trpc.aulasExtras.list.useQuery();
   const [expanded, setExpanded] = useState<number | null>(null);
 
-  if (isLoading) return <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-14 rounded-xl bg-muted animate-pulse" />)}</div>;
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {[1, 2].map(i => (
+          <div key={i} className="h-16 rounded-2xl bg-muted animate-pulse" />
+        ))}
+      </div>
+    );
+  }
 
   if ((aulas as AulaExtra[]).length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
-        <Mic className="w-12 h-12 mx-auto mb-3 opacity-30" />
-        <p className="text-sm">Nenhuma aula extra disponível ainda.</p>
+      <div className="text-center py-16 text-muted-foreground">
+        <Mic className="w-14 h-14 mx-auto mb-3 opacity-20" />
+        <p className="text-sm font-medium">Nenhuma aula extra disponível ainda.</p>
+        <p className="text-xs mt-1 opacity-70">O catequista adicionará conteúdos extras em breve.</p>
       </div>
     );
   }
@@ -172,58 +216,70 @@ function AbasExtras() {
       {(aulas as AulaExtra[]).map((aula) => {
         const isOpen = expanded === aula.id;
         return (
-          <Card key={aula.id} className={cn("border transition-all", isOpen ? "border-emerald-300 shadow-sm" : "border-border")}>
+          <Card key={aula.id} className={cn(
+            "border-2 transition-all overflow-hidden",
+            isOpen ? "border-emerald-400 shadow-md" : "border-border hover:border-emerald-200"
+          )}>
             <CardContent className="p-0">
-              <button className="w-full p-3 flex items-center gap-3 text-left"
+              <button className="w-full p-4 flex items-center gap-3 text-left"
                 onClick={() => setExpanded(isOpen ? null : aula.id)}>
-                <div className="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                  <Mic className="w-4 h-4 text-emerald-600" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <Mic className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground truncate">{aula.titulo}</p>
-                  <div className="flex gap-2">
-                    {aula.tema && <p className="text-xs text-muted-foreground truncate">{aula.tema}</p>}
-                    {aula.data && <p className="text-xs text-muted-foreground">· {aula.data}</p>}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {aula.tema && <span className="text-xs text-emerald-600 font-medium bg-emerald-50 px-1.5 py-0.5 rounded-full">{aula.tema}</span>}
+                    {aula.data && <span className="text-xs text-muted-foreground">{aula.data}</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                  {aula.audioUrl && <Music className="w-3.5 h-3.5 text-emerald-500" />}
-                  {aula.pdfUrl && <FileText className="w-3.5 h-3.5 text-rose-500" />}
-                  {isOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                  {aula.audioUrl && (
+                    <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
+                      <Music className="w-2.5 h-2.5 text-emerald-600" />
+                    </span>
+                  )}
+                  {aula.pdfUrl && (
+                    <span className="w-5 h-5 rounded-full bg-rose-100 flex items-center justify-center">
+                      <FileText className="w-2.5 h-2.5 text-rose-600" />
+                    </span>
+                  )}
+                  {isOpen
+                    ? <ChevronUp className="w-4 h-4 text-emerald-500 ml-1" />
+                    : <ChevronDown className="w-4 h-4 text-muted-foreground ml-1" />}
                 </div>
               </button>
               {isOpen && (
-                <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
+                <div className="px-4 pb-4 space-y-3 border-t border-emerald-100 pt-3 bg-emerald-50/30">
                   {aula.descricao && (
                     <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Conteúdo</p>
-                      <p className="text-sm text-foreground whitespace-pre-wrap">{aula.descricao}</p>
+                      <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1.5">Conteúdo</p>
+                      <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{aula.descricao}</p>
                     </div>
                   )}
                   {aula.textoLivre && (
                     <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Texto / Anotações</p>
-                      <p className="text-sm text-foreground whitespace-pre-wrap bg-amber-50 border border-amber-100 rounded-lg p-3">{aula.textoLivre}</p>
+                      <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1.5">Texto / Anotações</p>
+                      <p className="text-sm text-foreground whitespace-pre-wrap bg-amber-50 border border-amber-200 rounded-xl p-3 leading-relaxed">{aula.textoLivre}</p>
                     </div>
                   )}
                   {aula.audioUrl && (
                     <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Áudio</p>
+                      <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1.5">Áudio</p>
                       <AudioPlayer url={aula.audioUrl} nome={aula.audioNome} />
                     </div>
                   )}
                   {aula.pdfUrl && (
                     <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Material</p>
+                      <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1.5">Material</p>
                       <a href={aula.pdfUrl} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-2 p-2 rounded-lg bg-rose-50 border border-rose-200 text-sm text-rose-700 hover:bg-rose-100 transition-colors">
+                        className="flex items-center gap-2 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-700 hover:bg-rose-100 transition-colors">
                         <FileText className="w-4 h-4 flex-shrink-0" />
-                        <span className="flex-1 truncate">{aula.pdfNome ?? "Material"}</span>
+                        <span className="flex-1 truncate font-medium">{aula.pdfNome ?? "Material"}</span>
                         <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
                       </a>
                     </div>
                   )}
-                  {/* Links */}
                   <LinksExtraView aulaId={aula.id} />
                 </div>
               )}
@@ -240,12 +296,12 @@ function LinksExtraView({ aulaId }: { aulaId: number }) {
   if ((links as AulaExtraLink[]).length === 0) return null;
   return (
     <div className="space-y-1.5">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Links</p>
+      <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Links</p>
       {(links as AulaExtraLink[]).map((l) => (
         <a key={l.id} href={l.url} target="_blank" rel="noopener noreferrer"
-          className="flex items-center gap-2 p-2 rounded-lg bg-violet-50 border border-violet-100 text-sm text-violet-700 hover:bg-violet-100 transition-colors">
+          className="flex items-center gap-2 p-2.5 rounded-xl bg-violet-50 border border-violet-200 text-sm text-violet-700 hover:bg-violet-100 transition-colors">
           <LinkIcon className="w-3.5 h-3.5 flex-shrink-0" />
-          <span className="flex-1 truncate">{l.titulo || l.url}</span>
+          <span className="flex-1 truncate font-medium">{l.titulo || l.url}</span>
           <ExternalLink className="w-3 h-3 flex-shrink-0" />
         </a>
       ))}
@@ -253,92 +309,96 @@ function LinksExtraView({ aulaId }: { aulaId: number }) {
   );
 }
 
-// ─── Aba: Frequência ──────────────────────────────────────────────────────────
-function AbasFrequencia() {
-  const { data: resumo = [], isLoading } = trpc.resumo.frequencia.useQuery();
-
-  if (isLoading) return <div className="space-y-2">{[1,2,3,4].map(i => <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />)}</div>;
-
-  const alunos = (resumo as ResumoAluno[]).filter(a => a.nome);
-
-  return (
-    <div className="space-y-2">
-      {alunos.map((a) => (
-        <Card key={a.slot} className="border-border">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-foreground">{a.nome}</p>
-              <span className={cn("text-sm font-bold", pctColor(a.pct ?? 0))}>{a.pct ?? 0}%</span>
-            </div>
-              <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
-                <div className={cn("h-2 rounded-full transition-all", pctBg(a.pct ?? 0))}
-                  style={{ width: `${a.pct ?? 0}%` }} />
-            </div>
-            <div className="flex gap-3 text-xs text-muted-foreground">
-              <span className="text-emerald-600 font-medium">✓ {a.presentes} presença{a.presentes !== 1 ? "s" : ""}</span>
-              <span className="text-red-500 font-medium">✗ {a.faltas} falta{a.faltas !== 1 ? "s" : ""}</span>
-              {a.justificadas > 0 && <span className="text-amber-600 font-medium">J {a.justificadas}</span>}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
 // ─── Página Principal ─────────────────────────────────────────────────────────
-type Tab = "aulas" | "extras" | "frequencia";
+type Tab = "aulas" | "extras";
 
 export default function PortalAluno() {
   const [tab, setTab] = useState<Tab>("aulas");
+  const [copied, setCopied] = useState(false);
 
-  const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
-    { key: "aulas",      label: "Aulas",    icon: BookOpen },
-    { key: "extras",     label: "Extras",   icon: Mic },
-    { key: "frequencia", label: "Frequência", icon: BarChart2 },
+  const tabs: { key: Tab; label: string; icon: React.ElementType; color: string }[] = [
+    { key: "aulas",  label: "Aulas",        icon: BookOpen, color: "blue"    },
+    { key: "extras", label: "Aulas Extras",  icon: Mic,      color: "emerald" },
   ];
+
+  function handleShare() {
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({ title: "Catequese 2026/2027", url });
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Cabeçalho */}
-      <header className="bg-primary text-primary-foreground px-4 pt-safe-top">
-        <div className="max-w-2xl mx-auto py-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-            <Cross className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold leading-tight">Catequese 2026/2027</h1>
-            <p className="text-xs text-primary-foreground/70">Portal do Catequizando</p>
-          </div>
-        </div>
+      {/* Banner com imagem */}
+      <header className="relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url(https://d2xsxph8kpxj0f.cloudfront.net/310519663085088869/Te4tc5XKf7enc9Yair9yqx/vaticano_2c2c454e.webp)" }}
+        />
+        {/* Gradiente azul sobre a imagem */}
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/80 via-blue-800/75 to-blue-700/90" />
 
-        {/* Tabs */}
-        <div className="max-w-2xl mx-auto flex border-t border-white/20">
-          {tabs.map(({ key, label, icon: Icon }) => (
-            <button key={key} onClick={() => setTab(key)}
-              className={cn(
-                "flex-1 flex flex-col items-center py-2.5 gap-0.5 text-xs font-medium transition-colors",
-                tab === key ? "text-white border-b-2 border-white" : "text-white/60 hover:text-white/80"
-              )}>
-              <Icon className="w-4 h-4" />
-              {label}
+        {/* Conteúdo do header */}
+        <div className="relative z-10 px-4 pt-8 pb-0 max-w-2xl mx-auto">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 shadow-lg">
+                <Cross className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white leading-tight">Catequese 2026/2027</h1>
+                <p className="text-sm text-white/70">Portal do Catequizando</p>
+              </div>
+            </div>
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 text-white text-xs font-medium hover:bg-white/30 transition-colors"
+            >
+              {copied ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
+              {copied ? "Copiado!" : "Compartilhar"}
             </button>
-          ))}
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-1">
+            {tabs.map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 py-3 px-2 text-sm font-semibold rounded-t-xl transition-all",
+                  tab === key
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-white/70 hover:text-white hover:bg-white/10"
+                )}
+              >
+                <Icon className="w-4 h-4" />
+                <span className="hidden xs:inline">{label}</span>
+                <span className="xs:hidden">{key === "aulas" ? "Aulas" : "Extras"}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
       {/* Conteúdo */}
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-4 py-4">
-          {tab === "aulas"      && <AbasAulas />}
-          {tab === "extras"     && <AbasExtras />}
-          {tab === "frequencia" && <AbasFrequencia />}
+          {tab === "aulas"  && <AbasAulas />}
+          {tab === "extras" && <AbasExtras />}
         </div>
       </main>
 
       {/* Rodapé */}
-      <footer className="text-center py-3 text-xs text-muted-foreground border-t border-border">
-        Catequese 2026/2027 · Somente leitura
+      <footer className="text-center py-4 text-xs text-muted-foreground border-t border-border bg-background">
+        <p>Catequese 2026/2027 · Visualização somente leitura</p>
+        <p className="mt-0.5 opacity-60">Os dados dos alunos são protegidos e não estão visíveis aqui.</p>
       </footer>
     </div>
   );
