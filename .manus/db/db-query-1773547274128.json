@@ -1,0 +1,9 @@
+{
+  "query": "\nINSERT INTO alunos (slot, nome, telefone, sacramentos) VALUES\n(1,  'Barbara',              NULL, NULL),\n(2,  'Theo',                 NULL, NULL),\n(3,  'Daiane Iwata',         NULL, NULL),\n(4,  'Elaine Fokura',        NULL, NULL),\n(5,  'Ricardo',              NULL, NULL),\n(6,  'Filha do Ricardo',     NULL, NULL),\n(7,  'Joao Victor',          NULL, NULL),\n(8,  'Leticia Komatsudani',  NULL, NULL),\n(9,  'Leticia Katsurayama',  NULL, NULL),\n(10, 'Priscila Miyagawa',    NULL, NULL),\n(11, 'Tierry',               NULL, NULL)\nON DUPLICATE KEY UPDATE nome = VALUES(nome);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user KxbiLgiZtvbhz44.5e8cbd8c143b --database Te4tc5XKf7enc9Yair9yqx --execute \nINSERT INTO alunos (slot, nome, telefone, sacramentos) VALUES\n(1,  'Barbara',              NULL, NULL),\n(2,  'Theo',                 NULL, NULL),\n(3,  'Daiane Iwata',         NULL, NULL),\n(4,  'Elaine Fokura',        NULL, NULL),\n(5,  'Ricardo',              NULL, NULL),\n(6,  'Filha do Ricardo',     NULL, NULL),\n(7,  'Joao Victor',          NULL, NULL),\n(8,  'Leticia Komatsudani',  NULL, NULL),\n(9,  'Leticia Katsurayama',  NULL, NULL),\n(10, 'Priscila Miyagawa',    NULL, NULL),\n(11, 'Tierry',               NULL, NULL)\nON DUPLICATE KEY UPDATE nome = VALUES(nome);\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1541
+}

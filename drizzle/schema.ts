@@ -1,17 +1,15 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import {
+  int,
+  mysqlEnum,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+  json,
+} from "drizzle-orm/mysql-core";
 
-/**
- * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
- */
 export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
@@ -25,4 +23,52 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+// Sacramentos disponíveis
+export type Sacramento =
+  | "batismo"
+  | "primeira_comunhao"
+  | "crisma"
+  | "matrimonio";
+
+// Tabela de alunos: 25 slots fixos (slot 1–25)
+export const alunos = mysqlTable("alunos", {
+  id: int("id").autoincrement().primaryKey(),
+  slot: int("slot").notNull().unique(), // 1–25
+  nome: varchar("nome", { length: 120 }),
+  telefone: varchar("telefone", { length: 30 }),
+  sacramentos: json("sacramentos").$type<Sacramento[]>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Aluno = typeof alunos.$inferSelect;
+export type InsertAluno = typeof alunos.$inferInsert;
+
+// Tabela de aulas: 22 aulas fixas
+export const aulas = mysqlTable("aulas", {
+  id: int("id").autoincrement().primaryKey(),
+  numero: int("numero").notNull().unique(), // 1–22
+  data: varchar("data", { length: 10 }).notNull(), // "DD/MM"
+  descricao: text("descricao"),
+  audioUrl: text("audioUrl"),
+  audioKey: varchar("audioKey", { length: 255 }),
+  audioNome: varchar("audioNome", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Aula = typeof aulas.$inferSelect;
+export type InsertAula = typeof aulas.$inferInsert;
+
+// Tabela de presenças: status por aluno por aula
+export const presencas = mysqlTable("presencas", {
+  id: int("id").autoincrement().primaryKey(),
+  alunoSlot: int("alunoSlot").notNull(),
+  aulaNumero: int("aulaNumero").notNull(),
+  status: mysqlEnum("status", ["P", "F", "J"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Presenca = typeof presencas.$inferSelect;
+export type InsertPresenca = typeof presencas.$inferInsert;
