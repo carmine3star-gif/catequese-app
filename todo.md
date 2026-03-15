@@ -75,3 +75,4 @@
 - [ ] Portal do aluno: ocultar página de Alunos (dados pessoais protegidos)
 - [ ] Portal do aluno: ocultar Chamada (não pode alterar presenças)
 - [ ] Link do portal do aluno visível na tela Início para o catequista compartilhar
+- [ ] Adicionar campos de áudio (link Google Drive), PDF e links externos no formulário de criação de Aulas Extras

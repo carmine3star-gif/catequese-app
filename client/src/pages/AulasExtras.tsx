@@ -413,45 +413,241 @@ function NovaAulaForm({ onClose }: { onClose: () => void }) {
   const [descricao, setDescricao] = useState("");
   const [textoLivre, setTextoLivre] = useState("");
   const [data, setData] = useState("");
+  // Áudio
+  const [audioLink, setAudioLink] = useState("");
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  // PDF
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  // Links
+  const [links, setLinks] = useState<{ url: string; titulo: string }[]>([]);
+  const [newLinkUrl, setNewLinkUrl] = useState("");
+  const [newLinkTitulo, setNewLinkTitulo] = useState("");
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const audioRef = useRef<HTMLInputElement>(null);
+  const pdfRef = useRef<HTMLInputElement>(null);
 
   const upsert = trpc.aulasExtras.upsert.useMutation({
-    onSuccess: () => { utils.aulasExtras.list.invalidate(); onClose(); toast.success("Aula extra criada!"); },
     onError: () => toast.error("Erro ao criar aula extra"),
   });
+  const setAudioLinkMutation = trpc.aulasExtras.setAudioLink.useMutation();
+  const addLinkMutation = trpc.aulasExtras.addLink.useMutation();
+
+  const handleCreate = async () => {
+    if (!titulo) return;
+    try {
+      // 1. Criar a aula
+      const result = await upsert.mutateAsync({
+        titulo, tema: tema || null, descricao: descricao || null,
+        textoLivre: textoLivre || null, data: data || null,
+      });
+      const aulaId = (result as any).id;
+
+      // 2. Upload de áudio (arquivo)
+      if (audioFile && aulaId) {
+        const formData = new FormData();
+        formData.append("file", audioFile);
+        formData.append("aulaExtraId", String(aulaId));
+        formData.append("tipo", "audio");
+        setUploadProgress(0);
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.upload.onprogress = (e) => { if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100)); };
+          xhr.onload = () => { if (xhr.status >= 200 && xhr.status < 300) resolve(); else reject(new Error(xhr.responseText)); };
+          xhr.onerror = () => reject(new Error("Erro de rede"));
+          xhr.open("POST", "/api/upload/aula-extra");
+          xhr.send(formData);
+        });
+        setUploadProgress(null);
+      }
+
+      // 3. Link de áudio (Google Drive)
+      if (audioLink && aulaId) {
+        await setAudioLinkMutation.mutateAsync({ id: aulaId, link: audioLink });
+      }
+
+      // 4. Upload de PDF
+      if (pdfFile && aulaId) {
+        const formData = new FormData();
+        formData.append("file", pdfFile);
+        formData.append("aulaExtraId", String(aulaId));
+        formData.append("tipo", "pdf");
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.onload = () => { if (xhr.status >= 200 && xhr.status < 300) resolve(); else reject(new Error(xhr.responseText)); };
+          xhr.onerror = () => reject(new Error("Erro de rede"));
+          xhr.open("POST", "/api/upload/aula-extra");
+          xhr.send(formData);
+        });
+      }
+
+      // 5. Links externos
+      for (const l of links) {
+        if (l.url && aulaId) {
+          await addLinkMutation.mutateAsync({ aulaExtraId: aulaId, url: l.url, titulo: l.titulo || undefined });
+        }
+      }
+
+      utils.aulasExtras.list.invalidate();
+      toast.success("Aula extra criada!");
+      onClose();
+    } catch (err: any) {
+      toast.error(`Erro: ${err.message}`);
+      setUploadProgress(null);
+    }
+  };
 
   return (
     <Card className="border-emerald-300 shadow-md">
       <CardContent className="p-4 space-y-3">
         <p className="font-semibold text-sm text-emerald-700">Nova Aula Extra</p>
+
+        {/* Título */}
         <div>
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1 block">Título *</label>
           <Input value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Ex: Reflexão sobre a Páscoa" />
         </div>
+
+        {/* Tema */}
         <div>
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1 block">Tema</label>
           <Input value={tema} onChange={(e) => setTema(e.target.value)} placeholder="Ex: Páscoa, Sacramento, Oração..." />
         </div>
+
+        {/* Data */}
         <div>
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1 block">Data</label>
           <Input value={data} onChange={(e) => setData(e.target.value)} placeholder="Ex: 20/04/2026" />
         </div>
+
+        {/* Descrição */}
         <div>
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1 block">Descrição / Conteúdo</label>
           <Textarea value={descricao} onChange={(e) => setDescricao(e.target.value)}
             placeholder="Descreva o conteúdo abordado..." rows={3} />
         </div>
+
+        {/* Texto livre */}
         <div>
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1 block">Texto livre / Anotações</label>
           <Textarea value={textoLivre} onChange={(e) => setTextoLivre(e.target.value)}
             placeholder="Orações, reflexões, avisos, observações..." rows={3} />
         </div>
+
+        {/* Áudio */}
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <Music className="w-4 h-4 text-emerald-600" />
+            <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wide">Áudio da Aula</span>
+          </div>
+          {/* Opção 1: arquivo */}
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Enviar arquivo (mp3, m4a, wav — máx. 100MB)</p>
+            <input ref={audioRef} type="file" accept="audio/*" className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) { setAudioFile(f); setAudioLink(""); } }} />
+            {audioFile ? (
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-100 border border-emerald-200">
+                <Music className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span className="text-sm text-emerald-800 flex-1 truncate">{audioFile.name}</span>
+                <button onClick={() => { setAudioFile(null); if (audioRef.current) audioRef.current.value = ""; }}>
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </div>
+            ) : (
+              <Button size="sm" variant="outline" className="border-emerald-300 text-emerald-700 w-full"
+                onClick={() => audioRef.current?.click()}>
+                <Music className="w-3.5 h-3.5 mr-1.5" /> Selecionar arquivo de áudio
+              </Button>
+            )}
+          </div>
+          {/* Opção 2: link Google Drive */}
+          {!audioFile && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Ou cole o link do Google Drive</p>
+              <Input value={audioLink} onChange={(e) => setAudioLink(e.target.value)}
+                placeholder="https://drive.google.com/..." className="text-sm" />
+            </div>
+          )}
+        </div>
+
+        {/* PDF */}
+        <div className="rounded-lg border border-rose-200 bg-rose-50/50 p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-rose-600" />
+            <span className="text-xs font-semibold text-rose-700 uppercase tracking-wide">Material em PDF</span>
+          </div>
+          <input ref={pdfRef} type="file" accept=".pdf,application/pdf" className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) setPdfFile(f); }} />
+          {pdfFile ? (
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-rose-100 border border-rose-200">
+              <FileText className="w-4 h-4 text-rose-600 flex-shrink-0" />
+              <span className="text-sm text-rose-800 flex-1 truncate">{pdfFile.name}</span>
+              <button onClick={() => { setPdfFile(null); if (pdfRef.current) pdfRef.current.value = ""; }}>
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
+          ) : (
+            <Button size="sm" variant="outline" className="border-rose-300 text-rose-700 w-full"
+              onClick={() => pdfRef.current?.click()}>
+              <FileText className="w-3.5 h-3.5 mr-1.5" /> Selecionar PDF
+            </Button>
+          )}
+        </div>
+
+        {/* Links externos */}
+        <div className="rounded-lg border border-violet-200 bg-violet-50/50 p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <LinkIcon className="w-4 h-4 text-violet-600" />
+            <span className="text-xs font-semibold text-violet-700 uppercase tracking-wide">Links e Referências</span>
+          </div>
+          {links.map((l, i) => (
+            <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-violet-100 border border-violet-200">
+              <ExternalLink className="w-3.5 h-3.5 text-violet-500 flex-shrink-0" />
+              <span className="text-sm text-violet-800 flex-1 truncate">{l.titulo || l.url}</span>
+              <button onClick={() => setLinks(links.filter((_, j) => j !== i))}>
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
+          ))}
+          <div className="space-y-1.5">
+            <Input value={newLinkUrl} onChange={(e) => setNewLinkUrl(e.target.value)}
+              placeholder="URL (ex: https://...)" className="text-sm" />
+            <Input value={newLinkTitulo} onChange={(e) => setNewLinkTitulo(e.target.value)}
+              placeholder="Título do link (opcional)" className="text-sm" />
+            <Button size="sm" variant="outline" className="border-violet-300 text-violet-700 w-full"
+              onClick={() => {
+                if (newLinkUrl) {
+                  setLinks([...links, { url: newLinkUrl, titulo: newLinkTitulo }]);
+                  setNewLinkUrl(""); setNewLinkTitulo("");
+                }
+              }}
+              disabled={!newLinkUrl}>
+              <Plus className="w-3.5 h-3.5 mr-1.5" /> Adicionar link
+            </Button>
+          </div>
+        </div>
+
+        {/* Barra de progresso */}
+        {uploadProgress !== null && (
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Enviando arquivo...</span>
+              <span>{uploadProgress}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-emerald-500 h-2 rounded-full transition-all" style={{ width: `${uploadProgress}%` }} />
+            </div>
+          </div>
+        )}
+
+        {/* Botões */}
         <div className="flex gap-2 pt-1">
           <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
-            onClick={() => upsert.mutate({ titulo, tema: tema || null, descricao: descricao || null, textoLivre: textoLivre || null, data: data || null })}
-            disabled={!titulo || upsert.isPending}>
-            <Check className="w-4 h-4 mr-1.5" /> Criar aula extra
+            onClick={handleCreate}
+            disabled={!titulo || upsert.isPending || uploadProgress !== null}>
+            <Check className="w-4 h-4 mr-1.5" />
+            {upsert.isPending || uploadProgress !== null ? "Criando..." : "Criar aula extra"}
           </Button>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={upsert.isPending || uploadProgress !== null}>
             <X className="w-4 h-4" />
           </Button>
         </div>
