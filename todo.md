@@ -53,3 +53,4 @@
 - [x] Botão para visualizar/baixar PDF da aula
 - [x] Indicador visual de aula com PDF anexado
 - [x] Aumentar limite de upload de 16MB para 100MB (servidor e frontend)
+- [x] Corrigir upload de áudio/PDF: substituir base64-via-tRPC por multipart/form-data direto

@@ -103,22 +103,16 @@ export default function Aulas() {
     onSuccess: () => { utils.aulas.list.invalidate(); toast.success("Descrição salva!"); },
     onError: () => toast.error("Erro ao salvar descrição"),
   });
-  const uploadAudio = trpc.aulas.uploadAudio.useMutation({
-    onSuccess: () => { utils.aulas.list.invalidate(); toast.success("Áudio enviado!"); },
-    onError: () => toast.error("Erro ao enviar áudio"),
-  });
   const removeAudio = trpc.aulas.removeAudio.useMutation({
     onSuccess: () => { utils.aulas.list.invalidate(); toast.success("Áudio removido"); },
     onError: () => toast.error("Erro ao remover áudio"),
-  });
-  const uploadPdf = trpc.aulas.uploadPdf.useMutation({
-    onSuccess: () => { utils.aulas.list.invalidate(); toast.success("PDF enviado!"); },
-    onError: () => toast.error("Erro ao enviar PDF"),
   });
   const removePdf = trpc.aulas.removePdf.useMutation({
     onSuccess: () => { utils.aulas.list.invalidate(); toast.success("PDF removido"); },
     onError: () => toast.error("Erro ao remover PDF"),
   });
+
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   const [editingDesc, setEditingDesc] = useState<number | null>(null);
   const [descForm, setDescForm] = useState("");
@@ -148,22 +142,40 @@ export default function Aulas() {
       return;
     }
     setUploading({ numero, type });
+    setUploadProgress(0);
     try {
-      const base64 = await new Promise<string>((res, rej) => {
-        const reader = new FileReader();
-        reader.onload = () => res((reader.result as string).split(",")[1]);
-        reader.onerror = rej;
-        reader.readAsDataURL(file);
+      const endpoint = type === "audio" ? "/api/upload/audio" : "/api/upload/pdf";
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("numero", String(numero));
+
+      // XMLHttpRequest para acompanhar o progresso
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", endpoint);
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            let msg = "Erro no servidor";
+            try { msg = JSON.parse(xhr.responseText)?.error ?? msg; } catch {}
+            reject(new Error(msg));
+          }
+        };
+        xhr.onerror = () => reject(new Error("Falha de conexão"));
+        xhr.send(formData);
       });
-      if (type === "audio") {
-        await uploadAudio.mutateAsync({ numero, fileName: file.name, mimeType: file.type || "audio/mpeg", base64 });
-      } else {
-        await uploadPdf.mutateAsync({ numero, fileName: file.name, base64 });
-      }
-    } catch {
-      toast.error(`Falha no upload do ${type === "pdf" ? "PDF" : "áudio"}`);
+
+      await utils.aulas.list.invalidate();
+      toast.success(type === "audio" ? "Áudio enviado!" : "PDF enviado!");
+    } catch (err: any) {
+      toast.error(err?.message ?? `Falha no upload do ${type === "pdf" ? "PDF" : "áudio"}`);
     } finally {
       setUploading(null);
+      setUploadProgress(0);
     }
   };
 
@@ -293,8 +305,13 @@ export default function Aulas() {
                           onClick={() => { setPendingUpload({ numero: aula.numero, type: "pdf" }); pdfInputRef.current?.click(); }}
                           disabled={isUploadingPdf}
                           className="mt-2 h-8 text-xs w-full border-rose-300 text-rose-700 hover:bg-rose-50">
-                          {isUploadingPdf ? "Enviando..." : <><Upload className="w-3 h-3 mr-1" /> Substituir PDF</>}
+                          {isUploadingPdf ? `Enviando... ${uploadProgress}%` : <><Upload className="w-3 h-3 mr-1" /> Substituir PDF</>}
                         </Button>
+                      )}
+                      {isUploadingPdf && (
+                        <div className="mt-1 h-1.5 w-full bg-rose-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-rose-500 transition-all duration-200" style={{ width: `${uploadProgress}%` }} />
+                        </div>
                       )}
                     </>
                   ) : (
@@ -302,19 +319,26 @@ export default function Aulas() {
                       <FileText className="w-8 h-8 mx-auto text-rose-300 mb-2" />
                       <p className="text-xs text-rose-500">Nenhum PDF enviado</p>
                       {isAuthenticated && (
-                        <Button size="sm" variant="outline"
-                          onClick={() => { setPendingUpload({ numero: aula.numero, type: "pdf" }); pdfInputRef.current?.click(); }}
-                          disabled={isUploadingPdf}
-                          className="mt-2 h-8 text-xs border-rose-300 text-rose-700 hover:bg-rose-50">
-                          {isUploadingPdf ? (
-                            <span className="flex items-center gap-1">
-                              <div className="w-3 h-3 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
-                              Enviando...
-                            </span>
-                          ) : (
-                            <><Upload className="w-3 h-3 mr-1" /> Enviar PDF</>
+                        <>
+                          <Button size="sm" variant="outline"
+                            onClick={() => { setPendingUpload({ numero: aula.numero, type: "pdf" }); pdfInputRef.current?.click(); }}
+                            disabled={isUploadingPdf}
+                            className="mt-2 h-8 text-xs border-rose-300 text-rose-700 hover:bg-rose-50">
+                            {isUploadingPdf ? (
+                              <span className="flex items-center gap-1">
+                                <div className="w-3 h-3 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
+                                {uploadProgress}%
+                              </span>
+                            ) : (
+                              <><Upload className="w-3 h-3 mr-1" /> Enviar PDF</>
+                            )}
+                          </Button>
+                          {isUploadingPdf && (
+                            <div className="mt-2 h-1.5 w-full bg-rose-100 rounded-full overflow-hidden">
+                              <div className="h-full bg-rose-500 transition-all duration-200" style={{ width: `${uploadProgress}%` }} />
+                            </div>
                           )}
-                        </Button>
+                        </>
                       )}
                     </div>
                   )}
@@ -341,8 +365,13 @@ export default function Aulas() {
                           onClick={() => { setPendingUpload({ numero: aula.numero, type: "audio" }); audioInputRef.current?.click(); }}
                           disabled={isUploadingAudio}
                           className="mt-2 h-8 text-xs w-full">
-                          {isUploadingAudio ? "Enviando..." : <><Upload className="w-3 h-3 mr-1" /> Substituir áudio</>}
+                          {isUploadingAudio ? `Enviando... ${uploadProgress}%` : <><Upload className="w-3 h-3 mr-1" /> Substituir áudio</>}
                         </Button>
+                      )}
+                      {isUploadingAudio && (
+                        <div className="mt-1 h-1.5 w-full bg-blue-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary transition-all duration-200" style={{ width: `${uploadProgress}%` }} />
+                        </div>
                       )}
                     </>
                   ) : (
@@ -350,19 +379,26 @@ export default function Aulas() {
                       <Music className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
                       <p className="text-xs text-muted-foreground">Nenhum áudio enviado</p>
                       {isAuthenticated && (
-                        <Button size="sm" variant="outline"
-                          onClick={() => { setPendingUpload({ numero: aula.numero, type: "audio" }); audioInputRef.current?.click(); }}
-                          disabled={isUploadingAudio}
-                          className="mt-2 h-8 text-xs">
-                          {isUploadingAudio ? (
-                            <span className="flex items-center gap-1">
-                              <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                              Enviando...
-                            </span>
-                          ) : (
-                            <><Upload className="w-3 h-3 mr-1" /> Enviar áudio</>
+                        <>
+                          <Button size="sm" variant="outline"
+                            onClick={() => { setPendingUpload({ numero: aula.numero, type: "audio" }); audioInputRef.current?.click(); }}
+                            disabled={isUploadingAudio}
+                            className="mt-2 h-8 text-xs">
+                            {isUploadingAudio ? (
+                              <span className="flex items-center gap-1">
+                                <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                {uploadProgress}%
+                              </span>
+                            ) : (
+                              <><Upload className="w-3 h-3 mr-1" /> Enviar áudio</>
+                            )}
+                          </Button>
+                          {isUploadingAudio && (
+                            <div className="mt-2 h-1.5 w-full bg-blue-100 rounded-full overflow-hidden">
+                              <div className="h-full bg-primary transition-all duration-200" style={{ width: `${uploadProgress}%` }} />
+                            </div>
                           )}
-                        </Button>
+                        </>
                       )}
                     </div>
                   )}
