@@ -142,7 +142,7 @@ export default function Aulas() {
   };
 
   const handleFileUpload = async (numero: number, file: File, type: "audio" | "pdf") => {
-    const MAX_MB = 16;
+    const MAX_MB = 100;
     if (file.size > MAX_MB * 1024 * 1024) {
       toast.error(`Arquivo muito grande. Máximo: ${MAX_MB}MB`);
       return;

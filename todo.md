@@ -52,3 +52,4 @@
 - [x] Upload de PDF por aula na página Aulas (armazenado no S3)
 - [x] Botão para visualizar/baixar PDF da aula
 - [x] Indicador visual de aula com PDF anexado
+- [x] Aumentar limite de upload de 16MB para 100MB (servidor e frontend)
