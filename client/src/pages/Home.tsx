@@ -2,7 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClipboardList, Users, BookOpen, BarChart2, LogIn } from "lucide-react";
+import { ClipboardList, Users, BookOpen, BarChart2, LogIn, Share2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 
@@ -143,6 +143,39 @@ export default function Home() {
             </CardContent>
           </Card>
         )}
+
+        {/* Link do portal do aluno */}
+        <Card className="border-blue-200 bg-blue-50">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center flex-shrink-0">
+                <Share2 className="w-5 h-5 text-blue-700" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-blue-900">Portal do Catequizando</p>
+                <p className="text-xs text-blue-700 mb-2">Compartilhe este link com os alunos para que possam ver as aulas, áudios e sua frequência</p>
+                <div className="flex gap-2">
+                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={() => setLocation("/portal")}>
+                    Ver portal
+                  </Button>
+                  <Button size="sm" variant="outline" className="border-blue-300 text-blue-700"
+                    onClick={() => {
+                      const url = `${window.location.origin}/portal`;
+                      if (navigator.share) {
+                        navigator.share({ title: "Catequese 2026/2027", url });
+                      } else {
+                        navigator.clipboard.writeText(url);
+                        import("sonner").then(({ toast }) => toast.success("Link copiado!"));
+                      }
+                    }}>
+                    Copiar link
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Info */}
         <div className="text-center text-xs text-muted-foreground pb-2">

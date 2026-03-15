@@ -1,0 +1,9 @@
+{
+  "query": "\nCREATE TABLE IF NOT EXISTS aulas_extras (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  titulo VARCHAR(255) NOT NULL,\n  tema VARCHAR(255),\n  descricao TEXT,\n  textoLivre TEXT,\n  data VARCHAR(20),\n  audioUrl TEXT,\n  audioKey VARCHAR(500),\n  audioNome VARCHAR(255),\n  linkExterno VARCHAR(2000),\n  pdfUrl TEXT,\n  pdfKey VARCHAR(500),\n  pdfNome VARCHAR(255),\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL\n);\n\nCREATE TABLE IF NOT EXISTS aulas_extras_links (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  aulaExtraId INT NOT NULL,\n  titulo VARCHAR(255),\n  url TEXT NOT NULL,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL\n);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user KxbiLgiZtvbhz44.5e8cbd8c143b --database Te4tc5XKf7enc9Yair9yqx --execute \nCREATE TABLE IF NOT EXISTS aulas_extras (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  titulo VARCHAR(255) NOT NULL,\n  tema VARCHAR(255),\n  descricao TEXT,\n  textoLivre TEXT,\n  data VARCHAR(20),\n  audioUrl TEXT,\n  audioKey VARCHAR(500),\n  audioNome VARCHAR(255),\n  linkExterno VARCHAR(2000),\n  pdfUrl TEXT,\n  pdfKey VARCHAR(500),\n  pdfNome VARCHAR(255),\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL\n);\n\nCREATE TABLE IF NOT EXISTS aulas_extras_links (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  aulaExtraId INT NOT NULL,\n  titulo VARCHAR(255),\n  url TEXT NOT NULL,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL\n);\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1924
+}

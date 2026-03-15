@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, alunos, aulas, alunoFotos, presencas, users } from "../drizzle/schema";
+import { InsertUser, alunos, aulas, alunoFotos, presencas, users, aulasExtras, aulasExtrasLinks } from "../drizzle/schema";
 import type { Sacramento } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -185,4 +185,97 @@ export async function deleteFoto(id: number) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.delete(alunoFotos).where(eq(alunoFotos.id, id));
+}
+
+// ─── Aulas Extras ─────────────────────────────────────────────────────────────
+
+export async function listAulasExtras() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(aulasExtras).orderBy(aulasExtras.createdAt);
+}
+
+export async function getAulaExtraById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(aulasExtras).where(eq(aulasExtras.id, id)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function upsertAulaExtra(data: {
+  id?: number;
+  titulo: string;
+  tema?: string | null;
+  descricao?: string | null;
+  textoLivre?: string | null;
+  data?: string | null;
+  audioUrl?: string | null;
+  audioKey?: string | null;
+  audioNome?: string | null;
+  linkExterno?: string | null;
+  pdfUrl?: string | null;
+  pdfKey?: string | null;
+  pdfNome?: string | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  if (data.id) {
+    await db.update(aulasExtras).set({
+      titulo: data.titulo,
+      tema: data.tema ?? null,
+      descricao: data.descricao ?? null,
+      textoLivre: data.textoLivre ?? null,
+      data: data.data ?? null,
+      audioUrl: data.audioUrl ?? null,
+      audioKey: data.audioKey ?? null,
+      audioNome: data.audioNome ?? null,
+      linkExterno: data.linkExterno ?? null,
+      pdfUrl: data.pdfUrl ?? null,
+      pdfKey: data.pdfKey ?? null,
+      pdfNome: data.pdfNome ?? null,
+    }).where(eq(aulasExtras.id, data.id));
+    return data.id;
+  } else {
+    const result = await db.insert(aulasExtras).values({
+      titulo: data.titulo,
+      tema: data.tema ?? null,
+      descricao: data.descricao ?? null,
+      textoLivre: data.textoLivre ?? null,
+      data: data.data ?? null,
+      audioUrl: data.audioUrl ?? null,
+      audioKey: data.audioKey ?? null,
+      audioNome: data.audioNome ?? null,
+      linkExterno: data.linkExterno ?? null,
+      pdfUrl: data.pdfUrl ?? null,
+      pdfKey: data.pdfKey ?? null,
+      pdfNome: data.pdfNome ?? null,
+    });
+    return (result as any).insertId as number;
+  }
+}
+
+export async function deleteAulaExtra(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(aulasExtrasLinks).where(eq(aulasExtrasLinks.aulaExtraId, id));
+  await db.delete(aulasExtras).where(eq(aulasExtras.id, id));
+}
+
+export async function listLinksByAulaExtra(aulaExtraId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(aulasExtrasLinks).where(eq(aulasExtrasLinks.aulaExtraId, aulaExtraId)).orderBy(aulasExtrasLinks.createdAt);
+}
+
+export async function addLinkAulaExtra(aulaExtraId: number, url: string, titulo?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(aulasExtrasLinks).values({ aulaExtraId, url, titulo: titulo ?? null });
+  return (result as any).insertId as number;
+}
+
+export async function deleteLinkAulaExtra(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(aulasExtrasLinks).where(eq(aulasExtrasLinks.id, id));
 }

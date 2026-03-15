@@ -9,6 +9,8 @@ import Chamada from "./pages/Chamada";
 import Alunos from "./pages/Alunos";
 import Aulas from "./pages/Aulas";
 import Resumo from "./pages/Resumo";
+import AulasExtras from "./pages/AulasExtras";
+import PortalAluno from "./pages/PortalAluno";
 import BottomNav from "./components/BottomNav";
 import AppHeader from "./components/AppHeader";
 
@@ -23,6 +25,8 @@ function Router() {
           <Route path="/alunos" component={Alunos} />
           <Route path="/aulas" component={Aulas} />
           <Route path="/resumo" component={Resumo} />
+          <Route path="/aulas-extras" component={AulasExtras} />
+          <Route path="/portal" component={PortalAluno} />
           <Route path="/404" component={NotFound} />
           <Route component={NotFound} />
         </Switch>

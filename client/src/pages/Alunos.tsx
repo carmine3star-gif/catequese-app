@@ -84,8 +84,10 @@ function FotosAluno({ slot, nome, isAuthenticated }: { slot: number; nome: strin
     setGerandoPdf(true);
     try {
       // Importa jsPDF dinamicamente
-      const jsPDFModule = await import("jspdf");
-        const jsPDF = jsPDFModule.default ?? (jsPDFModule as any).jsPDF;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const jsPDFModule = await import("jspdf/dist/jspdf.es.min.js");
+      const jsPDF = (jsPDFModule as any).default ?? (jsPDFModule as any).jsPDF;
       const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
       const pageW = 210;
       const pageH = 297;

@@ -62,3 +62,16 @@
 - [x] Botão para gerar PDF com todas as fotos de um aluno para entregar ao responsável
 - [x] Remover aula 01/03 e ajustar calendário para começar em 15/03 (21 aulas no total)
 - [x] Adicionar imagem da Basílica de São Pedro no cabeçalho da tela Início
+- [ ] Tabela aulas_extras no banco (titulo, tema, descricao, audioUrl, audioKey, audioNome, linkExterno, pdfUrl, pdfKey, pdfNome, data)
+- [ ] Backend tRPC: router aulasExtras (list, upsert, delete, setAudioLink)
+- [ ] Rota Express de upload de áudio e PDF para aulas extras
+- [ ] Página AulasExtras com lista, criação, edição, player de áudio e PDF
+- [ ] Aba "Extras" na navegação inferior
+- [ ] Aulas extras não contam como presença nem falta
+- [ ] Campo de links externos (URL + título) nas Aulas Extras — múltiplos links por aula
+- [ ] Campo de texto livre/anotações nas Aulas Extras para orações, reflexões ou avisos
+- [ ] Portal público do aluno: rota /aluno sem login, somente-leitura
+- [ ] Portal do aluno: mostrar Aulas, Aulas Extras e Resumo de frequência
+- [ ] Portal do aluno: ocultar página de Alunos (dados pessoais protegidos)
+- [ ] Portal do aluno: ocultar Chamada (não pode alterar presenças)
+- [ ] Link do portal do aluno visível na tela Início para o catequista compartilhar

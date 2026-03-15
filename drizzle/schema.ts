@@ -76,6 +76,38 @@ export const presencas = mysqlTable("presencas", {
 export type Presenca = typeof presencas.$inferSelect;
 export type InsertPresenca = typeof presencas.$inferInsert;
 
+// ─── Aulas Extras ─────────────────────────────────────────────────────────────
+export const aulasExtras = mysqlTable("aulas_extras", {
+  id: int("id").autoincrement().primaryKey(),
+  titulo: varchar("titulo", { length: 255 }).notNull(),
+  tema: varchar("tema", { length: 255 }),
+  descricao: text("descricao"),
+  textoLivre: text("textoLivre"),
+  data: varchar("data", { length: 20 }),
+  audioUrl: text("audioUrl"),
+  audioKey: varchar("audioKey", { length: 500 }),
+  audioNome: varchar("audioNome", { length: 255 }),
+  linkExterno: varchar("linkExterno", { length: 2000 }),
+  pdfUrl: text("pdfUrl"),
+  pdfKey: varchar("pdfKey", { length: 500 }),
+  pdfNome: varchar("pdfNome", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const aulasExtrasLinks = mysqlTable("aulas_extras_links", {
+  id: int("id").autoincrement().primaryKey(),
+  aulaExtraId: int("aulaExtraId").notNull(),
+  titulo: varchar("titulo", { length: 255 }),
+  url: text("url").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AulaExtra = typeof aulasExtras.$inferSelect;
+export type InsertAulaExtra = typeof aulasExtras.$inferInsert;
+export type AulaExtraLink = typeof aulasExtrasLinks.$inferSelect;
+export type InsertAulaExtraLink = typeof aulasExtrasLinks.$inferInsert;
+
 // Tabela de fotos de documentos dos alunos (máx 7 por aluno)
 export const alunoFotos = mysqlTable("aluno_fotos", {
   id: int("id").autoincrement().primaryKey(),

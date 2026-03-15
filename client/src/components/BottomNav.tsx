@@ -1,13 +1,14 @@
 import { useLocation } from "wouter";
-import { ClipboardList, Users, BookOpen, BarChart2, Home } from "lucide-react";
+import { ClipboardList, Users, BookOpen, BarChart2, Home, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
-  { path: "/",        label: "Início",  icon: Home },
-  { path: "/chamada", label: "Chamada", icon: ClipboardList },
-  { path: "/alunos",  label: "Alunos",  icon: Users },
-  { path: "/aulas",   label: "Aulas",   icon: BookOpen },
-  { path: "/resumo",  label: "Resumo",  icon: BarChart2 },
+  { path: "/",            label: "Início",  icon: Home },
+  { path: "/chamada",     label: "Chamada", icon: ClipboardList },
+  { path: "/alunos",      label: "Alunos",  icon: Users },
+  { path: "/aulas",       label: "Aulas",   icon: BookOpen },
+  { path: "/aulas-extras",label: "Extras",  icon: Mic },
+  { path: "/resumo",      label: "Resumo",  icon: BarChart2 },
 ];
 
 export default function BottomNav() {

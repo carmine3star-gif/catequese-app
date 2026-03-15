@@ -14,6 +14,12 @@ import {
   upsertAula,
   upsertPresenca,
   listFotosByAluno,
+  listAulasExtras,
+  upsertAulaExtra,
+  deleteAulaExtra,
+  listLinksByAulaExtra,
+  addLinkAulaExtra,
+  deleteLinkAulaExtra,
 } from "./db";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
@@ -43,6 +49,84 @@ function convertGoogleDriveLink(link: string): string {
   return link;
 }
 
+// ─── Aulas Extras Router ──────────────────────────────────────────────────────
+const aulasExtrasRouter = router({
+  list: publicProcedure.query(async () => {
+    return listAulasExtras();
+  }),
+
+  upsert: protectedProcedure
+    .input(z.object({
+      id: z.number().optional(),
+      titulo: z.string().min(1),
+      tema: z.string().optional().nullable(),
+      descricao: z.string().optional().nullable(),
+      textoLivre: z.string().optional().nullable(),
+      data: z.string().optional().nullable(),
+      linkExterno: z.string().optional().nullable(),
+    }))
+    .mutation(async ({ input }) => {
+      const id = await upsertAulaExtra(input);
+      return { id };
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      await deleteAulaExtra(input.id);
+      return { success: true };
+    }),
+
+  setAudioLink: protectedProcedure
+    .input(z.object({ id: z.number(), link: z.string() }))
+    .mutation(async ({ input }) => {
+      const url = convertGoogleDriveLink(input.link);
+      const aulaExtra = await (await import("./db")).getAulaExtraById(input.id);
+      if (!aulaExtra) throw new Error("Aula extra não encontrada");
+      await upsertAulaExtra({ ...aulaExtra, audioUrl: url, audioKey: null, audioNome: "Link externo" });
+      return { url };
+    }),
+
+  removeAudio: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const aulaExtra = await (await import("./db")).getAulaExtraById(input.id);
+      if (!aulaExtra) throw new Error("Aula extra não encontrada");
+      await upsertAulaExtra({ ...aulaExtra, audioUrl: null, audioKey: null, audioNome: null });
+      return { success: true };
+    }),
+
+  removePdf: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const aulaExtra = await (await import("./db")).getAulaExtraById(input.id);
+      if (!aulaExtra) throw new Error("Aula extra não encontrada");
+      await upsertAulaExtra({ ...aulaExtra, pdfUrl: null, pdfKey: null, pdfNome: null });
+      return { success: true };
+    }),
+
+  listLinks: publicProcedure
+    .input(z.object({ aulaExtraId: z.number() }))
+    .query(async ({ input }) => {
+      return listLinksByAulaExtra(input.aulaExtraId);
+    }),
+
+  addLink: protectedProcedure
+    .input(z.object({ aulaExtraId: z.number(), url: z.string().url(), titulo: z.string().optional() }))
+    .mutation(async ({ input }) => {
+      const id = await addLinkAulaExtra(input.aulaExtraId, input.url, input.titulo);
+      return { id };
+    }),
+
+  deleteLink: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      await deleteLinkAulaExtra(input.id);
+      return { success: true };
+    }),
+});
+
+// ─── App Router ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 export const appRouter = router({
   system: systemRouter,
 
@@ -295,6 +379,7 @@ export const appRouter = router({
       });
     }),
   }),
+  aulasExtras: aulasExtrasRouter,
 });
 
 export type AppRouter = typeof appRouter;
