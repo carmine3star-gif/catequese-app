@@ -54,3 +54,5 @@
 - [x] Indicador visual de aula com PDF anexado
 - [x] Aumentar limite de upload de 16MB para 100MB (servidor e frontend)
 - [x] Corrigir upload de áudio/PDF: substituir base64-via-tRPC por multipart/form-data direto
+- [x] Suporte a link do Google Drive para áudio: colar link de compartilhamento e reproduzir no player
+- [x] Conversão automática de link Google Drive para URL de reprodução direta

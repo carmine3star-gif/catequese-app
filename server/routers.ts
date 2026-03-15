@@ -19,6 +19,29 @@ import { nanoid } from "nanoid";
 
 const sacramentoEnum = z.enum(["batismo", "primeira_comunhao", "crisma", "matrimonio"]);
 
+/**
+ * Converte qualquer formato de link do Google Drive para URL de stream direto.
+ * Formatos suportados:
+ *   https://drive.google.com/file/d/{ID}/view
+ *   https://drive.google.com/open?id={ID}
+ *   https://drive.google.com/uc?id={ID}
+ */
+function convertGoogleDriveLink(link: string): string {
+  // Extrai o ID do arquivo de qualquer formato de link do Drive
+  const patterns = [
+    /\/file\/d\/([a-zA-Z0-9_-]+)/,   // /file/d/{ID}/view
+    /[?&]id=([a-zA-Z0-9_-]+)/,        // ?id={ID} ou &id={ID}
+  ];
+  for (const pattern of patterns) {
+    const match = link.match(pattern);
+    if (match?.[1]) {
+      return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+    }
+  }
+  // Se não reconhecer o padrão, retorna o link original
+  return link;
+}
+
 export const appRouter = router({
   system: systemRouter,
 
@@ -126,6 +149,33 @@ export const appRouter = router({
         const aula = rows.find((a) => a.numero === input.numero);
         await upsertAula(input.numero, aula?.descricao ?? null, null, null, null, aula?.pdfUrl ?? null, aula?.pdfKey ?? null, aula?.pdfNome ?? null);
         return { success: true };
+      }),
+
+    // Salva um link externo (Google Drive, etc.) como fonte de áudio
+    setAudioLink: protectedProcedure
+      .input(
+        z.object({
+          numero: z.number().min(1).max(22),
+          link: z.string().url(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const rows = await listAulas();
+        const aula = rows.find((a) => a.numero === input.numero);
+        // Converte link de compartilhamento do Google Drive para link de stream direto
+        const url = convertGoogleDriveLink(input.link);
+        const nome = "Link externo (Google Drive)";
+        await upsertAula(
+          input.numero,
+          aula?.descricao ?? null,
+          url,
+          null, // sem key S3
+          nome,
+          aula?.pdfUrl ?? null,
+          aula?.pdfKey ?? null,
+          aula?.pdfNome ?? null
+        );
+        return { success: true, url };
       }),
 
     uploadPdf: protectedProcedure

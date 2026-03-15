@@ -14,17 +14,23 @@ import { cn } from "@/lib/utils";
 
 // ─── Player de áudio ──────────────────────────────────────────────────────────
 
+function isGoogleDriveUrl(url: string) {
+  return url.includes("drive.google.com");
+}
+
 function AudioPlayer({ url, nome }: { url: string; nome?: string | null }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [loadError, setLoadError] = useState(false);
+  const isDrive = isGoogleDriveUrl(url);
 
   const toggle = () => {
     const a = audioRef.current;
     if (!a) return;
     if (playing) { a.pause(); setPlaying(false); }
-    else { a.play(); setPlaying(true); }
+    else { a.play().catch(() => setLoadError(true)); setPlaying(true); }
   };
 
   const fmt = (s: number) => {
@@ -32,6 +38,37 @@ function AudioPlayer({ url, nome }: { url: string; nome?: string | null }) {
     const sec = Math.floor(s % 60);
     return `${m}:${sec.toString().padStart(2, "0")}`;
   };
+
+  // Para links do Google Drive: exibe botão de abrir no Drive
+  // pois o Drive bloqueia reproducão direta por CORS
+  if (isDrive || loadError) {
+    return (
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+            <Music className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-blue-900 truncate">{nome ?? "Áudio da aula"}</p>
+            <p className="text-[10px] text-blue-600 mt-0.5">Google Drive · Abre no app do Drive</p>
+          </div>
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-9 h-9 rounded-lg bg-primary hover:opacity-90 text-white flex items-center justify-center flex-shrink-0 transition-colors active:scale-95"
+          >
+            <ExternalLink className="w-4 h-4" />
+          </a>
+        </div>
+        {loadError && (
+          <p className="text-[10px] text-amber-600 mt-2 text-center">
+            Não foi possível reproduzir diretamente. Use o botão para abrir no Drive.
+          </p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl p-3">
@@ -41,6 +78,7 @@ function AudioPlayer({ url, nome }: { url: string; nome?: string | null }) {
         onTimeUpdate={() => { const a = audioRef.current; if (a) setProgress(a.currentTime); }}
         onLoadedMetadata={() => { const a = audioRef.current; if (a) setDuration(a.duration); }}
         onEnded={() => setPlaying(false)}
+        onError={() => setLoadError(true)}
       />
       <button
         onClick={toggle}
@@ -111,8 +149,14 @@ export default function Aulas() {
     onSuccess: () => { utils.aulas.list.invalidate(); toast.success("PDF removido"); },
     onError: () => toast.error("Erro ao remover PDF"),
   });
+  const setAudioLink = trpc.aulas.setAudioLink.useMutation({
+    onSuccess: () => { utils.aulas.list.invalidate(); toast.success("Link salvo!"); setLinkForm(""); setEditingLink(null); },
+    onError: (e) => toast.error(e.message || "Link inválido"),
+  });
 
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [editingLink, setEditingLink] = useState<number | null>(null);
+  const [linkForm, setLinkForm] = useState("");
 
   const [editingDesc, setEditingDesc] = useState<number | null>(null);
   const [descForm, setDescForm] = useState("");
@@ -361,12 +405,19 @@ export default function Aulas() {
                     <>
                       <AudioPlayer url={aula.audioUrl!} nome={aula.audioNome} />
                       {isAuthenticated && (
-                        <Button size="sm" variant="outline"
-                          onClick={() => { setPendingUpload({ numero: aula.numero, type: "audio" }); audioInputRef.current?.click(); }}
-                          disabled={isUploadingAudio}
-                          className="mt-2 h-8 text-xs w-full">
-                          {isUploadingAudio ? `Enviando... ${uploadProgress}%` : <><Upload className="w-3 h-3 mr-1" /> Substituir áudio</>}
-                        </Button>
+                        <div className="mt-2 space-y-1">
+                          <Button size="sm" variant="outline"
+                            onClick={() => { setPendingUpload({ numero: aula.numero, type: "audio" }); audioInputRef.current?.click(); }}
+                            disabled={isUploadingAudio}
+                            className="h-8 text-xs w-full">
+                            {isUploadingAudio ? `Enviando... ${uploadProgress}%` : <><Upload className="w-3 h-3 mr-1" /> Substituir arquivo</>}
+                          </Button>
+                          <Button size="sm" variant="ghost"
+                            onClick={() => { setEditingLink(aula.numero); setLinkForm(aula.audioUrl ?? ""); }}
+                            className="h-8 text-xs w-full text-blue-600">
+                            <ExternalLink className="w-3 h-3 mr-1" /> Usar link do Google Drive
+                          </Button>
+                        </div>
                       )}
                       {isUploadingAudio && (
                         <div className="mt-1 h-1.5 w-full bg-blue-100 rounded-full overflow-hidden">
@@ -375,30 +426,73 @@ export default function Aulas() {
                       )}
                     </>
                   ) : (
-                    <div className="text-center py-4 border-2 border-dashed border-border rounded-xl">
-                      <Music className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
-                      <p className="text-xs text-muted-foreground">Nenhum áudio enviado</p>
+                    <div className="border-2 border-dashed border-border rounded-xl p-4">
+                      <div className="text-center mb-3">
+                        <Music className="w-8 h-8 mx-auto text-muted-foreground/40 mb-1" />
+                        <p className="text-xs text-muted-foreground">Nenhum áudio adicionado</p>
+                      </div>
                       {isAuthenticated && (
-                        <>
+                        <div className="space-y-2">
+                          {/* Opção 1: Upload de arquivo */}
                           <Button size="sm" variant="outline"
                             onClick={() => { setPendingUpload({ numero: aula.numero, type: "audio" }); audioInputRef.current?.click(); }}
                             disabled={isUploadingAudio}
-                            className="mt-2 h-8 text-xs">
+                            className="h-8 text-xs w-full">
                             {isUploadingAudio ? (
                               <span className="flex items-center gap-1">
                                 <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                                 {uploadProgress}%
                               </span>
                             ) : (
-                              <><Upload className="w-3 h-3 mr-1" /> Enviar áudio</>
+                              <><Upload className="w-3 h-3 mr-1" /> Enviar arquivo de áudio</>
                             )}
                           </Button>
                           {isUploadingAudio && (
-                            <div className="mt-2 h-1.5 w-full bg-blue-100 rounded-full overflow-hidden">
+                            <div className="h-1.5 w-full bg-blue-100 rounded-full overflow-hidden">
                               <div className="h-full bg-primary transition-all duration-200" style={{ width: `${uploadProgress}%` }} />
                             </div>
                           )}
-                        </>
+
+                          {/* Opção 2: Link do Google Drive */}
+                          <div className="relative">
+                            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center">
+                              <div className="flex-1 border-t border-border" />
+                              <span className="px-2 text-[10px] text-muted-foreground bg-background">ou</span>
+                              <div className="flex-1 border-t border-border" />
+                            </div>
+                          </div>
+
+                          {editingLink === aula.numero ? (
+                            <div className="space-y-1.5 pt-1">
+                              <p className="text-[10px] text-muted-foreground">Cole o link de compartilhamento do Google Drive:</p>
+                              <input
+                                type="url"
+                                value={linkForm}
+                                onChange={(e) => setLinkForm(e.target.value)}
+                                placeholder="https://drive.google.com/file/d/..."
+                                className="w-full text-xs border border-border rounded-lg px-3 py-2 bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
+                                autoFocus
+                              />
+                              <div className="flex gap-1.5">
+                                <Button size="sm"
+                                  onClick={() => setAudioLink.mutate({ numero: aula.numero, link: linkForm.trim() })}
+                                  disabled={!linkForm.trim() || setAudioLink.isPending}
+                                  className="flex-1 h-8 text-xs bg-primary text-primary-foreground">
+                                  {setAudioLink.isPending ? "Salvando..." : <><Check className="w-3 h-3 mr-1" /> Salvar link</>}
+                                </Button>
+                                <Button size="sm" variant="outline" onClick={() => setEditingLink(null)} className="h-8 text-xs">
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <Button size="sm" variant="outline"
+                              onClick={() => { setEditingLink(aula.numero); setLinkForm(""); }}
+                              className="h-8 text-xs w-full border-blue-300 text-blue-700 hover:bg-blue-50">
+                              <ExternalLink className="w-3 h-3 mr-1" /> Usar link do Google Drive
+                            </Button>
+                          )}
+                        </div>
                       )}
                     </div>
                   )}
