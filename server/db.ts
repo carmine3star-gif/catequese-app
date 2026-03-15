@@ -119,14 +119,21 @@ export async function upsertAula(
   descricao: string | null,
   audioUrl: string | null,
   audioKey: string | null,
-  audioNome: string | null
+  audioNome: string | null,
+  pdfUrl?: string | null,
+  pdfKey?: string | null,
+  pdfNome?: string | null
 ) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
+  const updateSet: Record<string, unknown> = { descricao, audioUrl, audioKey, audioNome };
+  if (pdfUrl !== undefined) updateSet.pdfUrl = pdfUrl;
+  if (pdfKey !== undefined) updateSet.pdfKey = pdfKey;
+  if (pdfNome !== undefined) updateSet.pdfNome = pdfNome;
   await db
     .insert(aulas)
-    .values({ numero, data: AULAS_DATA[numero - 1]?.data ?? "", descricao, audioUrl, audioKey, audioNome })
-    .onDuplicateKeyUpdate({ set: { descricao, audioUrl, audioKey, audioNome } });
+    .values({ numero, data: AULAS_DATA[numero - 1]?.data ?? "", descricao, audioUrl, audioKey, audioNome, pdfUrl: pdfUrl ?? null, pdfKey: pdfKey ?? null, pdfNome: pdfNome ?? null })
+    .onDuplicateKeyUpdate({ set: updateSet });
 }
 
 // ─── Presenças ────────────────────────────────────────────────────────────────

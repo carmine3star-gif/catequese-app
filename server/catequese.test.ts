@@ -162,6 +162,37 @@ describe("resumo.frequencia", () => {
   });
 });
 
+// ─── PDF ─────────────────────────────────────────────────────────────────────
+
+describe("aulas.uploadPdf", () => {
+  it("requer autenticação", async () => {
+    const caller = appRouter.createCaller(createCtx(false));
+    await expect(
+      caller.aulas.uploadPdf({ numero: 1, fileName: "aula.pdf", base64: "dGVzdA==" })
+    ).rejects.toThrow();
+  });
+
+  it("salva PDF quando autenticado", async () => {
+    const caller = appRouter.createCaller(createCtx(true));
+    const result = await caller.aulas.uploadPdf({ numero: 1, fileName: "aula.pdf", base64: "dGVzdA==" });
+    expect(result.success).toBe(true);
+    expect(result.url).toBe("https://example.com/audio.mp3"); // mock retorna essa URL
+  });
+});
+
+describe("aulas.removePdf", () => {
+  it("requer autenticação", async () => {
+    const caller = appRouter.createCaller(createCtx(false));
+    await expect(caller.aulas.removePdf({ numero: 1 })).rejects.toThrow();
+  });
+
+  it("remove PDF quando autenticado", async () => {
+    const caller = appRouter.createCaller(createCtx(true));
+    const result = await caller.aulas.removePdf({ numero: 1 });
+    expect(result.success).toBe(true);
+  });
+});
+
 // ─── Auth ──────────────────────────────────────────────────────────────────────
 
 describe("auth.logout", () => {

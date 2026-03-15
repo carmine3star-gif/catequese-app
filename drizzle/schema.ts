@@ -53,6 +53,9 @@ export const aulas = mysqlTable("aulas", {
   audioUrl: text("audioUrl"),
   audioKey: varchar("audioKey", { length: 255 }),
   audioNome: varchar("audioNome", { length: 255 }),
+  pdfUrl: text("pdfUrl"),
+  pdfKey: varchar("pdfKey", { length: 255 }),
+  pdfNome: varchar("pdfNome", { length: 255 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

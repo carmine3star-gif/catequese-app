@@ -47,3 +47,8 @@
 - [x] Vitest: 16 testes passando (routers alunos, aulas, presenças, resumo, auth)
 - [x] Checkpoint final
 - [x] Entrega ao usuário
+
+## Melhorias
+- [x] Upload de PDF por aula na página Aulas (armazenado no S3)
+- [x] Botão para visualizar/baixar PDF da aula
+- [x] Indicador visual de aula com PDF anexado

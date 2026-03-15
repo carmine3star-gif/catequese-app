@@ -124,7 +124,52 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const rows = await listAulas();
         const aula = rows.find((a) => a.numero === input.numero);
-        await upsertAula(input.numero, aula?.descricao ?? null, null, null, null);
+        await upsertAula(input.numero, aula?.descricao ?? null, null, null, null, aula?.pdfUrl ?? null, aula?.pdfKey ?? null, aula?.pdfNome ?? null);
+        return { success: true };
+      }),
+
+    uploadPdf: protectedProcedure
+      .input(
+        z.object({
+          numero: z.number().min(1).max(22),
+          fileName: z.string(),
+          base64: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const rows = await listAulas();
+        const aula = rows.find((a) => a.numero === input.numero);
+        const key = `catequese/aulas/pdf-aula-${input.numero}-${nanoid(8)}.pdf`;
+        const buffer = Buffer.from(input.base64, "base64");
+        const { url } = await storagePut(key, buffer, "application/pdf");
+        await upsertAula(
+          input.numero,
+          aula?.descricao ?? null,
+          aula?.audioUrl ?? null,
+          aula?.audioKey ?? null,
+          aula?.audioNome ?? null,
+          url,
+          key,
+          input.fileName
+        );
+        return { success: true, url, key };
+      }),
+
+    removePdf: protectedProcedure
+      .input(z.object({ numero: z.number().min(1).max(22) }))
+      .mutation(async ({ input }) => {
+        const rows = await listAulas();
+        const aula = rows.find((a) => a.numero === input.numero);
+        await upsertAula(
+          input.numero,
+          aula?.descricao ?? null,
+          aula?.audioUrl ?? null,
+          aula?.audioKey ?? null,
+          aula?.audioNome ?? null,
+          null,
+          null,
+          null
+        );
         return { success: true };
       }),
   }),

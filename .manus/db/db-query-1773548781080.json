@@ -1,0 +1,9 @@
+{
+  "query": "\nALTER TABLE aulas\n  ADD COLUMN pdfUrl TEXT NULL,\n  ADD COLUMN pdfKey VARCHAR(255) NULL,\n  ADD COLUMN pdfNome VARCHAR(255) NULL;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user KxbiLgiZtvbhz44.5e8cbd8c143b --database Te4tc5XKf7enc9Yair9yqx --execute \nALTER TABLE aulas\n  ADD COLUMN pdfUrl TEXT NULL,\n  ADD COLUMN pdfKey VARCHAR(255) NULL,\n  ADD COLUMN pdfNome VARCHAR(255) NULL;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1951
+}
