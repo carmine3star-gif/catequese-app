@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
@@ -15,10 +15,13 @@ import BottomNav from "./components/BottomNav";
 import AppHeader from "./components/AppHeader";
 
 function Router() {
+  const [location] = useLocation();
+  const isPortal = location.startsWith("/portal");
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <AppHeader />
-      <main className="flex-1 pb-nav overflow-y-auto">
+      {!isPortal && <AppHeader />}
+      <main className={`flex-1 overflow-y-auto ${isPortal ? "" : "pb-nav"}`}>
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/chamada" component={Chamada} />
@@ -31,7 +34,7 @@ function Router() {
           <Route component={NotFound} />
         </Switch>
       </main>
-      <BottomNav />
+      {!isPortal && <BottomNav />}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -309,6 +309,69 @@ function LinksExtraView({ aulaId }: { aulaId: number }) {
   );
 }
 
+// ─── Banner de Instalação PWA ────────────────────────────────────────────────
+type BeforeInstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
+
+function InstallBanner() {
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showIosBanner, setShowIosBanner] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    // Verificar se já está instalado
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+    if (isStandalone) return;
+
+    // Android/Chrome: capturar evento de instalação
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+
+    // iOS: detectar Safari no iPhone/iPad
+    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isSafari = /safari/i.test(navigator.userAgent) && !/chrome/i.test(navigator.userAgent);
+    if (isIos && isSafari) setShowIosBanner(true);
+
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  if (dismissed) return null;
+  if (!deferredPrompt && !showIosBanner) return null;
+
+  return (
+    <div className="mx-4 mt-3 mb-1 rounded-2xl border border-blue-200 bg-blue-50 p-3 flex items-start gap-3 shadow-sm">
+      <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
+        <span className="text-white text-lg font-bold">✝</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-blue-900">Instalar na tela inicial</p>
+        {deferredPrompt ? (
+          <p className="text-xs text-blue-700 mt-0.5">Adicione o app à sua tela inicial para acesso rápido.</p>
+        ) : (
+          <p className="text-xs text-blue-700 mt-0.5">No Safari, toque em <strong>Compartilhar</strong> → <strong>"Adicionar à Tela de Início"</strong>.</p>
+        )}
+      </div>
+      <div className="flex gap-1.5 flex-shrink-0">
+        {deferredPrompt && (
+          <button
+            onClick={async () => { await deferredPrompt.prompt(); setDeferredPrompt(null); }}
+            className="px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors">
+            Instalar
+          </button>
+        )}
+        <button
+          onClick={() => setDismissed(true)}
+          className="px-2 py-1.5 rounded-xl text-blue-500 text-xs hover:bg-blue-100 transition-colors">
+          ✕
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Página Principal ─────────────────────────────────────────────────────────
 type Tab = "aulas" | "extras";
 
@@ -386,6 +449,9 @@ export default function PortalAluno() {
           </div>
         </div>
       </header>
+
+      {/* Banner de instalação PWA */}
+      <InstallBanner />
 
       {/* Conteúdo */}
       <main className="flex-1 overflow-y-auto">

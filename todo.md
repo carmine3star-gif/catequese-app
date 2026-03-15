@@ -81,3 +81,7 @@
 - [x] Portal: mostrar Aulas Extras (conteúdo, áudio, PDF, links)
 - [x] Portal: sem acesso a dados de alunos, chamada ou frequência
 - [x] Link de compartilhamento do portal na tela Início
+- [x] PWA: manifest.json com nome, ícones e cores do app
+- [x] PWA: meta tags no index.html para iPhone (apple-touch-icon, apple-mobile-web-app)
+- [x] PWA: banner de instalação no portal do aluno (Android) e instruções para iPhone
+- [x] Esconder barra de navegação inferior no portal do catequizando (/portal)

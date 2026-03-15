@@ -1,0 +1,26 @@
+{
+  "name": "Catequese 2026/2027",
+  "short_name": "Catequese",
+  "description": "Lista de chamada e aulas da catequese 2026/2027",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1d4ed8",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://d2xsxph8kpxj0f.cloudfront.net/310519663085088869/Te4tc5XKf7enc9Yair9yqx/icon-192_e0235dc8.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://d2xsxph8kpxj0f.cloudfront.net/310519663085088869/Te4tc5XKf7enc9Yair9yqx/icon-512_08f60940.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "lang": "pt-BR"
+}
