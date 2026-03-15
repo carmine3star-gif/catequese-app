@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, alunos, aulas, presencas, users } from "../drizzle/schema";
+import { InsertUser, alunos, aulas, alunoFotos, presencas, users } from "../drizzle/schema";
 import type { Sacramento } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -163,4 +163,27 @@ export async function deletePresenca(alunoSlot: number, aulaNumero: number) {
   await db
     .delete(presencas)
     .where(and(eq(presencas.alunoSlot, alunoSlot), eq(presencas.aulaNumero, aulaNumero)));
+}
+
+// ─── Fotos dos Alunos ────────────────────────────────────────────────────────────────────────────────
+
+export async function listFotosByAluno(alunoSlot: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(alunoFotos).where(eq(alunoFotos.alunoSlot, alunoSlot)).orderBy(alunoFotos.ordem);
+}
+
+export async function insertFoto(alunoSlot: number, ordem: number, url: string, fileKey: string, nomeArquivo: string) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db
+    .insert(alunoFotos)
+    .values({ alunoSlot, ordem, url, fileKey, nomeArquivo })
+    .onDuplicateKeyUpdate({ set: { url, fileKey, nomeArquivo } });
+}
+
+export async function deleteFoto(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(alunoFotos).where(eq(alunoFotos.id, id));
 }

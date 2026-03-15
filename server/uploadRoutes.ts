@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import multer from "multer";
 import { nanoid } from "nanoid";
 import { storagePut } from "./storage";
-import { listAulas, upsertAula } from "./db";
+import { listAulas, upsertAula, listFotosByAluno, insertFoto, deleteFoto } from "./db";
 import { sdk } from "./_core/sdk";
 
 const router = Router();
@@ -106,6 +106,52 @@ router.post(
       res.json({ success: true, url, key, nome: file.originalname });
     } catch (err: any) {
       console.error("[Upload PDF]", err);
+      res.status(500).json({ error: err?.message ?? "Erro interno" });
+    }
+  }
+);
+
+// POST /api/upload/foto-aluno  — multipart/form-data: file + slot + ordem
+router.post(
+  "/foto-aluno",
+  requireAuth,
+  upload.single("file"),
+  async (req: Request, res: Response) => {
+    try {
+      const file = req.file;
+      const slot = parseInt(req.body.slot ?? "0", 10);
+      const ordem = parseInt(req.body.ordem ?? "1", 10);
+
+      if (!file) { res.status(400).json({ error: "Arquivo não enviado" }); return; }
+      if (!slot || slot < 1 || slot > 25) { res.status(400).json({ error: "Slot inválido" }); return; }
+      if (!ordem || ordem < 1 || ordem > 7) { res.status(400).json({ error: "Ordem inválida (1-7)" }); return; }
+
+      const ext = (file.originalname.split(".").pop() ?? "jpg").toLowerCase();
+      const key = `catequese/alunos/slot-${slot}-foto-${ordem}-${nanoid(8)}.${ext}`;
+      const { url } = await storagePut(key, file.buffer, file.mimetype || "image/jpeg");
+
+      await insertFoto(slot, ordem, url, key, file.originalname);
+
+      res.json({ success: true, url, key, nome: file.originalname, slot, ordem });
+    } catch (err: any) {
+      console.error("[Upload Foto Aluno]", err);
+      res.status(500).json({ error: err?.message ?? "Erro interno" });
+    }
+  }
+);
+
+// DELETE /api/upload/foto-aluno/:id
+router.delete(
+  "/foto-aluno/:id",
+  requireAuth,
+  async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id ?? "0", 10);
+      if (!id) { res.status(400).json({ error: "ID inválido" }); return; }
+      await deleteFoto(id);
+      res.json({ success: true });
+    } catch (err: any) {
+      console.error("[Delete Foto Aluno]", err);
       res.status(500).json({ error: err?.message ?? "Erro interno" });
     }
   }

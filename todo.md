@@ -56,3 +56,7 @@
 - [x] Corrigir upload de áudio/PDF: substituir base64-via-tRPC por multipart/form-data direto
 - [x] Suporte a link do Google Drive para áudio: colar link de compartilhamento e reproduzir no player
 - [x] Conversão automática de link Google Drive para URL de reprodução direta
+- [x] Corrigir link Google Drive: abrir diretamente no Drive sem tentar reproduzir no app
+- [x] Upload de até 7 fotos de documentos por aluno (S3)
+- [x] Galeria de fotos por aluno na página Alunos
+- [x] Botão para gerar PDF com todas as fotos de um aluno para entregar ao responsável

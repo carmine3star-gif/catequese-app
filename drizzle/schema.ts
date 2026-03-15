@@ -75,3 +75,17 @@ export const presencas = mysqlTable("presencas", {
 
 export type Presenca = typeof presencas.$inferSelect;
 export type InsertPresenca = typeof presencas.$inferInsert;
+
+// Tabela de fotos de documentos dos alunos (máx 7 por aluno)
+export const alunoFotos = mysqlTable("aluno_fotos", {
+  id: int("id").autoincrement().primaryKey(),
+  alunoSlot: int("alunoSlot").notNull(),
+  ordem: int("ordem").notNull().default(1), // 1-7
+  url: text("url").notNull(),
+  fileKey: varchar("fileKey", { length: 255 }).notNull(),
+  nomeArquivo: varchar("nomeArquivo", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AlunoFoto = typeof alunoFotos.$inferSelect;
+export type InsertAlunoFoto = typeof alunoFotos.$inferInsert;

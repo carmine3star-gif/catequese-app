@@ -13,6 +13,7 @@ import {
   upsertAluno,
   upsertAula,
   upsertPresenca,
+  listFotosByAluno,
 } from "./db";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
@@ -162,9 +163,9 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const rows = await listAulas();
         const aula = rows.find((a) => a.numero === input.numero);
-        // Converte link de compartilhamento do Google Drive para link de stream direto
-        const url = convertGoogleDriveLink(input.link);
-        const nome = "Link externo (Google Drive)";
+        // Salva o link original do Drive (será aberto diretamente no Drive)
+        const url = input.link;
+        const nome = "Link do Google Drive";
         await upsertAula(
           input.numero,
           aula?.descricao ?? null,
@@ -254,7 +255,14 @@ export const appRouter = router({
       }),
   }),
 
-  // ─── Resumo ────────────────────────────────────────────────────────────────
+  // ─── Fotos dos Alunos ────────────────────────────────────────────────────────────────────────────
+  fotos: router({
+    list: publicProcedure
+      .input(z.object({ slot: z.number().min(1).max(25) }))
+      .query(async ({ input }) => listFotosByAluno(input.slot)),
+  }),
+
+  // ─── Resumo ──────────────────────────────────────────────────────────────────────────────
   resumo: router({
     frequencia: publicProcedure.query(async () => {
       const [alunosRows, presencasRows] = await Promise.all([
