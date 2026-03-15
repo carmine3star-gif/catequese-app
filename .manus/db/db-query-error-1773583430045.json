@@ -1,0 +1,8 @@
+{
+  "query": "\n-- Primeiro deletar as presenças da aula 01/03 (numero=1)\nDELETE FROM presencas WHERE aulaId = (SELECT id FROM aulas WHERE data = '01/03' LIMIT 1);\n\n-- Deletar a aula 01/03\nDELETE FROM aulas WHERE data = '01/03';\n\n-- Renumerar as aulas: cada aula tem seu numero decrementado em 1\nUPDATE aulas SET numero = numero - 1 WHERE numero > 1 ORDER BY numero ASC;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user KxbiLgiZtvbhz44.5e8cbd8c143b --database Te4tc5XKf7enc9Yair9yqx --execute \n-- Primeiro deletar as presenças da aula 01/03 (numero=1)\nDELETE FROM presencas WHERE aulaId = (SELECT id FROM aulas WHERE data = '01/03' LIMIT 1);\n\n-- Deletar a aula 01/03\nDELETE FROM aulas WHERE data = '01/03';\n\n-- Renumerar as aulas: cada aula tem seu numero decrementado em 1\nUPDATE aulas SET numero = numero - 1 WHERE numero > 1 ORDER BY numero ASC;\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 3: Unknown column 'aulaid' in 'where clause'"
+  ]
+}

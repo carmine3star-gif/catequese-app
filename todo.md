@@ -60,3 +60,4 @@
 - [x] Upload de até 7 fotos de documentos por aluno (S3)
 - [x] Galeria de fotos por aluno na página Alunos
 - [x] Botão para gerar PDF com todas as fotos de um aluno para entregar ao responsável
+- [x] Remover aula 01/03 e ajustar calendário para começar em 15/03 (21 aulas no total)

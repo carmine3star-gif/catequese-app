@@ -1,0 +1,120 @@
+{
+  "query": "SELECT id, numero, data FROM aulas ORDER BY numero;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user KxbiLgiZtvbhz44.5e8cbd8c143b --database Te4tc5XKf7enc9Yair9yqx --execute SELECT id, numero, data FROM aulas ORDER BY numero;",
+  "rows": [
+    {
+      "id": "180331",
+      "numero": "1",
+      "data": "01/03"
+    },
+    {
+      "id": "2",
+      "numero": "2",
+      "data": "15/03"
+    },
+    {
+      "id": "3",
+      "numero": "3",
+      "data": "05/04"
+    },
+    {
+      "id": "4",
+      "numero": "4",
+      "data": "19/04"
+    },
+    {
+      "id": "5",
+      "numero": "5",
+      "data": "03/05"
+    },
+    {
+      "id": "6",
+      "numero": "6",
+      "data": "17/05"
+    },
+    {
+      "id": "7",
+      "numero": "7",
+      "data": "07/06"
+    },
+    {
+      "id": "8",
+      "numero": "8",
+      "data": "21/06"
+    },
+    {
+      "id": "9",
+      "numero": "9",
+      "data": "05/07"
+    },
+    {
+      "id": "10",
+      "numero": "10",
+      "data": "19/07"
+    },
+    {
+      "id": "11",
+      "numero": "11",
+      "data": "02/08"
+    },
+    {
+      "id": "12",
+      "numero": "12",
+      "data": "16/08"
+    },
+    {
+      "id": "13",
+      "numero": "13",
+      "data": "06/09"
+    },
+    {
+      "id": "14",
+      "numero": "14",
+      "data": "20/09"
+    },
+    {
+      "id": "15",
+      "numero": "15",
+      "data": "04/10"
+    },
+    {
+      "id": "16",
+      "numero": "16",
+      "data": "18/10"
+    },
+    {
+      "id": "17",
+      "numero": "17",
+      "data": "01/11"
+    },
+    {
+      "id": "18",
+      "numero": "18",
+      "data": "15/11"
+    },
+    {
+      "id": "19",
+      "numero": "19",
+      "data": "06/12"
+    },
+    {
+      "id": "20",
+      "numero": "20",
+      "data": "20/12"
+    },
+    {
+      "id": "21",
+      "numero": "21",
+      "data": "03/01"
+    },
+    {
+      "id": "22",
+      "numero": "22",
+      "data": "17/01"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnumero\tdata\n180331\t1\t01/03\n2\t2\t15/03\n3\t3\t05/04\n4\t4\t19/04\n5\t5\t03/05\n6\t6\t17/05\n7\t7\t07/06\n8\t8\t21/06\n9\t9\t05/07\n10\t10\t19/07\n11\t11\t02/08\n12\t12\t16/08\n13\t13\t06/09\n14\t14\t20/09\n15\t15\t04/10\n16\t16\t18/10\n17\t17\t01/11\n18\t18\t15/11\n19\t19\t06/12\n20\t20\t20/12\n21\t21\t03/01\n22\t22\t17/01\n",
+  "stderr": "",
+  "execution_time_ms": 1472
+}

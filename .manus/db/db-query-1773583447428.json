@@ -1,0 +1,9 @@
+{
+  "query": "\n-- Deletar presenças registradas para a aula número 1 (01/03)\nDELETE FROM presencas WHERE aulaNumero = 1;\n\n-- Deletar a aula 01/03\nDELETE FROM aulas WHERE data = '01/03';\n\n-- Renumerar as aulas restantes (decrementar numero em 1)\nUPDATE aulas SET numero = numero - 1 WHERE numero > 1 ORDER BY numero ASC;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user KxbiLgiZtvbhz44.5e8cbd8c143b --database Te4tc5XKf7enc9Yair9yqx --execute \n-- Deletar presenças registradas para a aula número 1 (01/03)\nDELETE FROM presencas WHERE aulaNumero = 1;\n\n-- Deletar a aula 01/03\nDELETE FROM aulas WHERE data = '01/03';\n\n-- Renumerar as aulas restantes (decrementar numero em 1)\nUPDATE aulas SET numero = numero - 1 WHERE numero > 1 ORDER BY numero ASC;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2024
+}
