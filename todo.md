@@ -62,20 +62,20 @@
 - [x] Botão para gerar PDF com todas as fotos de um aluno para entregar ao responsável
 - [x] Remover aula 01/03 e ajustar calendário para começar em 15/03 (21 aulas no total)
 - [x] Adicionar imagem da Basílica de São Pedro no cabeçalho da tela Início
-- [ ] Tabela aulas_extras no banco (titulo, tema, descricao, audioUrl, audioKey, audioNome, linkExterno, pdfUrl, pdfKey, pdfNome, data)
-- [ ] Backend tRPC: router aulasExtras (list, upsert, delete, setAudioLink)
-- [ ] Rota Express de upload de áudio e PDF para aulas extras
-- [ ] Página AulasExtras com lista, criação, edição, player de áudio e PDF
-- [ ] Aba "Extras" na navegação inferior
-- [ ] Aulas extras não contam como presença nem falta
-- [ ] Campo de links externos (URL + título) nas Aulas Extras — múltiplos links por aula
-- [ ] Campo de texto livre/anotações nas Aulas Extras para orações, reflexões ou avisos
-- [ ] Portal público do aluno: rota /aluno sem login, somente-leitura
-- [ ] Portal do aluno: mostrar Aulas, Aulas Extras e Resumo de frequência
-- [ ] Portal do aluno: ocultar página de Alunos (dados pessoais protegidos)
-- [ ] Portal do aluno: ocultar Chamada (não pode alterar presenças)
-- [ ] Link do portal do aluno visível na tela Início para o catequista compartilhar
-- [ ] Adicionar campos de áudio (link Google Drive), PDF e links externos no formulário de criação de Aulas Extras
+- [x] Tabela aulas_extras no banco (titulo, tema, descricao, audioUrl, audioKey, audioNome, linkExterno, pdfUrl, pdfKey, pdfNome, data)
+- [x] Backend tRPC: router aulasExtras (list, upsert, delete, setAudioLink)
+- [x] Rota Express de upload de áudio e PDF para aulas extras (/api/upload/aula-extra)
+- [x] Página AulasExtras com lista, criação, edição, player de áudio e PDF
+- [x] Aba "Extras" na navegação inferior
+- [x] Aulas extras não contam como presença nem falta
+- [x] Campo de links externos (URL + título) nas Aulas Extras — múltiplos links por aula
+- [x] Campo de texto livre/anotações nas Aulas Extras para orações, reflexões ou avisos
+- [x] Portal público do aluno: rota /aluno sem login, somente-leitura
+- [x] Portal do aluno: mostrar Aulas, Aulas Extras e Resumo de frequência
+- [x] Portal do aluno: ocultar página de Alunos (dados pessoais protegidos)
+- [x] Portal do aluno: ocultar Chamada (não pode alterar presenças)
+- [x] Link do portal do aluno visível na tela Início para o catequista compartilhar
+- [x] Adicionar campos de áudio (link Google Drive), PDF e links externos no formulário de criação de Aulas Extras
 - [x] Portal público /portal: visualização somente-leitura sem login
 - [x] Portal: mostrar lista de Aulas (conteúdo, PDF, link de áudio)
 - [x] Portal: mostrar Aulas Extras (conteúdo, áudio, PDF, links)
@@ -85,3 +85,4 @@
 - [x] PWA: meta tags no index.html para iPhone (apple-touch-icon, apple-mobile-web-app)
 - [x] PWA: banner de instalação no portal do aluno (Android) e instruções para iPhone
 - [x] Esconder barra de navegação inferior no portal do catequizando (/portal)
+- [x] Corrigir exibição do PDF das Aulas Extras no portal do catequizando (rota /api/upload/aula-extra criada)

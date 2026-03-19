@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import multer from "multer";
 import { nanoid } from "nanoid";
 import { storagePut } from "./storage";
-import { listAulas, upsertAula, listFotosByAluno, insertFoto, deleteFoto } from "./db";
+import { listAulas, upsertAula, listFotosByAluno, insertFoto, deleteFoto, getAulaExtraById, upsertAulaExtra } from "./db";
 import { sdk } from "./_core/sdk";
 
 const router = Router();
@@ -135,6 +135,55 @@ router.post(
       res.json({ success: true, url, key, nome: file.originalname, slot, ordem });
     } catch (err: any) {
       console.error("[Upload Foto Aluno]", err);
+      res.status(500).json({ error: err?.message ?? "Erro interno" });
+    }
+  }
+);
+
+// POST /api/upload/aula-extra  — multipart/form-data: file + aulaExtraId + tipo (audio|pdf)
+router.post(
+  "/aula-extra",
+  requireAuth,
+  upload.single("file"),
+  async (req: Request, res: Response) => {
+    try {
+      const file = req.file;
+      const aulaExtraId = parseInt(req.body.aulaExtraId ?? "0", 10);
+      const tipo = req.body.tipo as "audio" | "pdf";
+
+      if (!file) {
+        res.status(400).json({ error: "Arquivo não enviado" });
+        return;
+      }
+      if (!aulaExtraId || aulaExtraId < 1) {
+        res.status(400).json({ error: "ID de aula extra inválido" });
+        return;
+      }
+      if (tipo !== "audio" && tipo !== "pdf") {
+        res.status(400).json({ error: "Tipo inválido (audio ou pdf)" });
+        return;
+      }
+
+      const aulaExtra = await getAulaExtraById(aulaExtraId);
+      if (!aulaExtra) {
+        res.status(404).json({ error: "Aula extra não encontrada" });
+        return;
+      }
+
+      if (tipo === "audio") {
+        const ext = (file.originalname.split(".").pop() ?? "mp3").toLowerCase();
+        const key = `catequese/aulas-extras/audio-${aulaExtraId}-${nanoid(8)}.${ext}`;
+        const { url } = await storagePut(key, file.buffer, file.mimetype || "audio/mpeg");
+        await upsertAulaExtra({ ...aulaExtra, audioUrl: url, audioKey: key, audioNome: file.originalname });
+        res.json({ success: true, url, key, nome: file.originalname });
+      } else {
+        const key = `catequese/aulas-extras/pdf-${aulaExtraId}-${nanoid(8)}.pdf`;
+        const { url } = await storagePut(key, file.buffer, "application/pdf");
+        await upsertAulaExtra({ ...aulaExtra, pdfUrl: url, pdfKey: key, pdfNome: file.originalname });
+        res.json({ success: true, url, key, nome: file.originalname });
+      }
+    } catch (err: any) {
+      console.error("[Upload Aula Extra]", err);
       res.status(500).json({ error: err?.message ?? "Erro interno" });
     }
   }

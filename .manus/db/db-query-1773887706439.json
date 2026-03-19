@@ -1,0 +1,17 @@
+{
+  "query": "SELECT id, titulo, pdfUrl, pdfNome, pdfKey FROM aulas_extras;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user KxbiLgiZtvbhz44.5e8cbd8c143b --database Te4tc5XKf7enc9Yair9yqx --execute SELECT id, titulo, pdfUrl, pdfNome, pdfKey FROM aulas_extras;",
+  "rows": [
+    {
+      "id": "1",
+      "titulo": "As Diferenças entre a Igreja Católica e a Igreja Ortodoxa",
+      "pdfUrl": "NULL",
+      "pdfNome": "NULL",
+      "pdfKey": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitulo\tpdfUrl\tpdfNome\tpdfKey\n1\tAs Diferenças entre a Igreja Católica e a Igreja Ortodoxa\tNULL\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1552
+}
