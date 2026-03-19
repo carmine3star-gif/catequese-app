@@ -22,6 +22,13 @@
       "when": 1773890969448,
       "tag": "0002_organic_nextwave",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1773912907942,
+      "tag": "0003_equal_wolf_cub",
+      "breakpoints": true
     }
   ]
 }

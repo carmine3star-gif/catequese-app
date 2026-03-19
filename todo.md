@@ -97,3 +97,9 @@
 
 ## Notificações
 - [x] Notificar catequista (notifyOwner) quando novo comentário for publicado no portal
+
+## Resposta do Catequista nos Comentários
+- [x] Adicionar campos resposta e respondidoEm na tabela comentarios
+- [x] Backend tRPC: mutation responderComentario (protectedProcedure)
+- [x] UI admin: botão/campo de resposta em cada comentário (Aulas e AulasExtras)
+- [x] Portal: exibir resposta do catequista abaixo do comentário do aluno

@@ -122,13 +122,15 @@ export const alunoFotos = mysqlTable("aluno_fotos", {
 export type AlunoFoto = typeof alunoFotos.$inferSelect;
 export type InsertAlunoFoto = typeof alunoFotos.$inferInsert;
 
-// ─── Comentários nas Aulas ─────────────────────────────────────────────────────
+// ─── Comentários nas Aulas ────────────────────────────────────────────────────
 export const comentarios = mysqlTable("comentarios", {
   id: int("id").autoincrement().primaryKey(),
   tipo: mysqlEnum("tipo", ["aula", "aulaExtra"]).notNull(), // qual tipo de aula
   referenciaId: int("referenciaId").notNull(), // id da aula ou aula extra
   autor: varchar("autor", { length: 100 }).notNull(), // nome do aluno (livre, sem login)
   texto: text("texto").notNull(),
+  resposta: text("resposta"), // resposta do catequista (null = sem resposta)
+  respondidoEm: timestamp("respondidoEm"), // data da resposta
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

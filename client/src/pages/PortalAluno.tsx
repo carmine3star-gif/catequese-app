@@ -363,6 +363,13 @@ function ComentariosView({ tipo, referenciaId, cor }: {
                 </span>
               </div>
               <p className="text-sm text-foreground leading-relaxed pl-6.5">{c.texto}</p>
+              {/* Resposta do catequista */}
+              {c.resposta && (
+                <div className={`mt-2 ml-6 pl-3 border-l-2 ${cor === "blue" ? "border-blue-300" : "border-emerald-300"} space-y-0.5`}>
+                  <p className={`text-[10px] font-bold ${labelCor} uppercase tracking-wide`}>Catequista respondeu</p>
+                  <p className="text-sm text-foreground leading-relaxed">{c.resposta}</p>
+                </div>
+              )}
             </div>
           ))}
         </div>

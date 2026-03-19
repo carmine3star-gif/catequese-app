@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `comentarios` ADD `resposta` text;\nALTER TABLE `comentarios` ADD `respondidoEm` timestamp;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user KxbiLgiZtvbhz44.5e8cbd8c143b --database Te4tc5XKf7enc9Yair9yqx --execute ALTER TABLE `comentarios` ADD `resposta` text;\nALTER TABLE `comentarios` ADD `respondidoEm` timestamp;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2079
+}

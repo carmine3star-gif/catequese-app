@@ -304,6 +304,14 @@ export async function deleteComentario(id: number) {
   await db.delete(comentarios).where(eq(comentarios.id, id));
 }
 
+export async function responderComentario(id: number, resposta: string) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(comentarios)
+    .set({ resposta, respondidoEm: new Date() })
+    .where(eq(comentarios.id, id));
+}
+
 export async function listAllComentarios() {
   const db = await getDb();
   if (!db) return [];

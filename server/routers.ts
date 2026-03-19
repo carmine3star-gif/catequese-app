@@ -24,6 +24,7 @@ import {
   listComentarios,
   addComentario,
   deleteComentario,
+  responderComentario,
   listAllComentarios,
 } from "./db";
 import { storagePut } from "./storage";
@@ -418,6 +419,16 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await deleteComentario(input.id);
+        return { success: true };
+      }),
+
+    responder: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        resposta: z.string().min(1).max(2000).trim(),
+      }))
+      .mutation(async ({ input }) => {
+        await responderComentario(input.id, input.resposta);
         return { success: true };
       }),
 
