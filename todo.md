@@ -86,3 +86,4 @@
 - [x] PWA: banner de instalação no portal do aluno (Android) e instruções para iPhone
 - [x] Esconder barra de navegação inferior no portal do catequizando (/portal)
 - [x] Corrigir exibição do PDF das Aulas Extras no portal do catequizando (rota /api/upload/aula-extra criada)
+- [x] Corrigir exibição do conteúdo ao expandir Aula Extra no portal: adicionada mensagem de fallback quando não há conteúdo

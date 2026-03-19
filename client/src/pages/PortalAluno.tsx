@@ -281,6 +281,11 @@ function AbasExtras() {
                     </div>
                   )}
                   <LinksExtraView aulaId={aula.id} />
+                  {!aula.descricao && !aula.textoLivre && !aula.audioUrl && !aula.pdfUrl && (
+                    <p className="text-sm text-muted-foreground text-center py-2 italic">
+                      O catequista ainda não adicionou conteúdo para esta aula.
+                    </p>
+                  )}
                 </div>
               )}
             </CardContent>
