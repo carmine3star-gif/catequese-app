@@ -103,3 +103,7 @@
 - [x] Backend tRPC: mutation responderComentario (protectedProcedure)
 - [x] UI admin: botão/campo de resposta em cada comentário (Aulas e AulasExtras)
 - [x] Portal: exibir resposta do catequista abaixo do comentário do aluno
+
+## Compartilhamento via WhatsApp
+- [x] Botão de compartilhamento WhatsApp nas aulas normais do portal
+- [x] Botão de compartilhamento WhatsApp nas aulas extras do portal
