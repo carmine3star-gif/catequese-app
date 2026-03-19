@@ -94,3 +94,6 @@
 - [x] Portal: seção de comentários em cada Aula (normal e extra) com formulário de envio
 - [x] Portal: exibir lista de comentários por aula com nome do autor e data
 - [x] Admin: visualizar e excluir comentários nas páginas Aulas e Aulas Extras
+
+## Notificações
+- [x] Notificar catequista (notifyOwner) quando novo comentário for publicado no portal

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
+import { notifyOwner } from "./_core/notification";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   deletePresenca,
@@ -404,6 +405,12 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         const id = await addComentario(input.tipo, input.referenciaId, input.autor, input.texto);
+        // Notifica o catequista sobre o novo comentário (fire-and-forget)
+        const tipoLabel = input.tipo === "aula" ? "Aula" : "Aula Extra";
+        notifyOwner({
+          title: `💬 Novo comentário de ${input.autor}`,
+          content: `${tipoLabel} #${input.referenciaId}\n\n"${input.texto}"`,
+        }).catch(() => { /* ignora falha de notificação */ });
         return { id };
       }),
 
