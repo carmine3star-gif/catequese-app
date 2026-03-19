@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   BookOpen, Mic, ChevronDown, ChevronUp,
-  Music, FileText, ExternalLink, Link as LinkIcon, Cross, Share2, Check
+  Music, FileText, ExternalLink, Link as LinkIcon, Cross, Share2, Check,
+  MessageCircle, Send, User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -144,6 +145,7 @@ function AbasAulas() {
                           </a>
                         </div>
                       )}
+                      <ComentariosView tipo="aula" referenciaId={aula.id} cor="blue" />
                     </div>
                   )}
                 </CardContent>
@@ -286,12 +288,116 @@ function AbasExtras() {
                       O catequista ainda não adicionou conteúdo para esta aula.
                     </p>
                   )}
+                  <ComentariosView tipo="aulaExtra" referenciaId={aula.id} cor="emerald" />
                 </div>
               )}
             </CardContent>
           </Card>
         );
       })}
+    </div>
+  );
+}
+
+// ─── Comentários ──────────────────────────────────────────────────────────────
+const AUTOR_KEY = "catequese_autor";
+
+function ComentariosView({ tipo, referenciaId, cor }: {
+  tipo: "aula" | "aulaExtra";
+  referenciaId: number;
+  cor: "blue" | "emerald";
+}) {
+  const utils = trpc.useUtils();
+  const { data: comentarios = [] } = trpc.comentarios.list.useQuery({ tipo, referenciaId });
+  const [autor, setAutor] = useState(() => localStorage.getItem(AUTOR_KEY) ?? "");
+  const [texto, setTexto] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const create = trpc.comentarios.create.useMutation({
+    onSuccess: () => {
+      setTexto("");
+      setErro("");
+      utils.comentarios.list.invalidate({ tipo, referenciaId });
+    },
+    onError: (e) => setErro(e.message),
+    onSettled: () => setEnviando(false),
+  });
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!autor.trim() || !texto.trim()) {
+      setErro("Preencha seu nome e a mensagem.");
+      return;
+    }
+    localStorage.setItem(AUTOR_KEY, autor.trim());
+    setEnviando(true);
+    create.mutate({ tipo, referenciaId, autor: autor.trim(), texto: texto.trim() });
+  }
+
+  const borderCor = cor === "blue" ? "border-blue-200" : "border-emerald-200";
+  const labelCor = cor === "blue" ? "text-blue-600" : "text-emerald-700";
+  const bgCor = cor === "blue" ? "bg-blue-50" : "bg-emerald-50";
+  const btnCor = cor === "blue" ? "bg-blue-600 hover:bg-blue-700" : "bg-emerald-600 hover:bg-emerald-700";
+
+  return (
+    <div className={`border-t ${borderCor} pt-3 space-y-3`}>
+      <p className={`text-xs font-bold ${labelCor} uppercase tracking-wider flex items-center gap-1.5`}>
+        <MessageCircle className="w-3.5 h-3.5" />
+        Comentários {(comentarios as any[]).length > 0 && `(${(comentarios as any[]).length})`}
+      </p>
+
+      {/* Lista de comentários */}
+      {(comentarios as any[]).length > 0 && (
+        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+          {(comentarios as any[]).map((c: any) => (
+            <div key={c.id} className={`rounded-xl p-2.5 ${bgCor} border ${borderCor}`}>
+              <div className="flex items-center gap-1.5 mb-1">
+                <div className={`w-5 h-5 rounded-full ${cor === "blue" ? "bg-blue-200" : "bg-emerald-200"} flex items-center justify-center flex-shrink-0`}>
+                  <User className={`w-3 h-3 ${labelCor}`} />
+                </div>
+                <span className={`text-xs font-semibold ${labelCor}`}>{c.autor}</span>
+                <span className="text-xs text-muted-foreground ml-auto">
+                  {new Date(c.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
+                </span>
+              </div>
+              <p className="text-sm text-foreground leading-relaxed pl-6.5">{c.texto}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Formulário de novo comentário */}
+      <form onSubmit={handleSubmit} className="space-y-2">
+        <input
+          type="text"
+          placeholder="Seu nome"
+          value={autor}
+          onChange={e => setAutor(e.target.value)}
+          maxLength={100}
+          className={`w-full text-sm px-3 py-2 rounded-xl border ${borderCor} bg-background focus:outline-none focus:ring-2 focus:ring-${cor === "blue" ? "blue" : "emerald"}-300`}
+        />
+        <div className="flex gap-2">
+          <textarea
+            ref={textareaRef}
+            placeholder="Escreva sua dúvida ou comentário..."
+            value={texto}
+            onChange={e => setTexto(e.target.value)}
+            maxLength={1000}
+            rows={2}
+            className={`flex-1 text-sm px-3 py-2 rounded-xl border ${borderCor} bg-background focus:outline-none focus:ring-2 focus:ring-${cor === "blue" ? "blue" : "emerald"}-300 resize-none`}
+          />
+          <button
+            type="submit"
+            disabled={enviando || !texto.trim() || !autor.trim()}
+            className={`${btnCor} text-white rounded-xl px-3 py-2 flex items-center justify-center flex-shrink-0 disabled:opacity-50 transition-colors`}
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
+        {erro && <p className="text-xs text-red-500">{erro}</p>}
+      </form>
     </div>
   );
 }

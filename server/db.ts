@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, alunos, aulas, alunoFotos, presencas, users, aulasExtras, aulasExtrasLinks } from "../drizzle/schema";
+import { InsertUser, alunos, aulas, alunoFotos, presencas, users, aulasExtras, aulasExtrasLinks, comentarios } from "../drizzle/schema";
 import type { Sacramento } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -278,4 +278,34 @@ export async function deleteLinkAulaExtra(id: number) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.delete(aulasExtrasLinks).where(eq(aulasExtrasLinks.id, id));
+}
+
+// ─── Comentários ─────────────────────────────────────────────────────
+
+
+export async function listComentarios(tipo: "aula" | "aulaExtra", referenciaId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(comentarios)
+    .where(and(eq(comentarios.tipo, tipo), eq(comentarios.referenciaId, referenciaId)))
+    .orderBy(comentarios.createdAt);
+}
+
+export async function addComentario(tipo: "aula" | "aulaExtra", referenciaId: number, autor: string, texto: string) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(comentarios).values({ tipo, referenciaId, autor, texto });
+  return (result as any).insertId as number;
+}
+
+export async function deleteComentario(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(comentarios).where(eq(comentarios.id, id));
+}
+
+export async function listAllComentarios() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(comentarios).orderBy(comentarios.createdAt);
 }

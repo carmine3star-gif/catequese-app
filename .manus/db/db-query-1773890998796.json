@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `comentarios` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `tipo` enum('aula','aulaExtra') NOT NULL,\n  `referenciaId` int NOT NULL,\n  `autor` varchar(100) NOT NULL,\n  `texto` text NOT NULL,\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  CONSTRAINT `comentarios_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user KxbiLgiZtvbhz44.5e8cbd8c143b --database Te4tc5XKf7enc9Yair9yqx --execute CREATE TABLE IF NOT EXISTS `comentarios` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `tipo` enum('aula','aulaExtra') NOT NULL,\n  `referenciaId` int NOT NULL,\n  `autor` varchar(100) NOT NULL,\n  `texto` text NOT NULL,\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  CONSTRAINT `comentarios_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1552
+}

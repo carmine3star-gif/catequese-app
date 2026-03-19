@@ -87,3 +87,10 @@
 - [x] Esconder barra de navegação inferior no portal do catequizando (/portal)
 - [x] Corrigir exibição do PDF das Aulas Extras no portal do catequizando (rota /api/upload/aula-extra criada)
 - [x] Corrigir exibição do conteúdo ao expandir Aula Extra no portal: adicionada mensagem de fallback quando não há conteúdo
+
+## Comentários nas Aulas
+- [x] Tabela comentarios no banco (id, tipo: aula|aulaExtra, referenciaId, autor, texto, createdAt)
+- [x] Backend tRPC: router comentarios (list, create público, delete protegido)
+- [x] Portal: seção de comentários em cada Aula (normal e extra) com formulário de envio
+- [x] Portal: exibir lista de comentários por aula com nome do autor e data
+- [x] Admin: visualizar e excluir comentários nas páginas Aulas e Aulas Extras

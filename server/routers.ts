@@ -20,6 +20,10 @@ import {
   listLinksByAulaExtra,
   addLinkAulaExtra,
   deleteLinkAulaExtra,
+  listComentarios,
+  addComentario,
+  deleteComentario,
+  listAllComentarios,
 } from "./db";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
@@ -380,6 +384,40 @@ export const appRouter = router({
     }),
   }),
   aulasExtras: aulasExtrasRouter,
+  // ─── Comentários ─────────────────────────────────────────────────────────────
+  comentarios: router({
+    list: publicProcedure
+      .input(z.object({
+        tipo: z.enum(["aula", "aulaExtra"]),
+        referenciaId: z.number(),
+      }))
+      .query(async ({ input }) => {
+        return listComentarios(input.tipo, input.referenciaId);
+      }),
+
+    create: publicProcedure
+      .input(z.object({
+        tipo: z.enum(["aula", "aulaExtra"]),
+        referenciaId: z.number(),
+        autor: z.string().min(1).max(100).trim(),
+        texto: z.string().min(1).max(1000).trim(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await addComentario(input.tipo, input.referenciaId, input.autor, input.texto);
+        return { id };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteComentario(input.id);
+        return { success: true };
+      }),
+
+    listAll: protectedProcedure.query(async () => {
+      return listAllComentarios();
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

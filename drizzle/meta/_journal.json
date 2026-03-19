@@ -15,6 +15,13 @@
       "when": 1773546860839,
       "tag": "0001_aromatic_terrax",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1773890969448,
+      "tag": "0002_organic_nextwave",
+      "breakpoints": true
     }
   ]
 }
