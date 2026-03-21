@@ -107,3 +107,6 @@
 ## Compartilhamento via WhatsApp
 - [x] Botão de compartilhamento WhatsApp nas aulas normais do portal
 - [x] Botão de compartilhamento WhatsApp nas aulas extras do portal
+
+## Sacramentos no Dashboard
+- [x] Seção visual no dashboard agrupando catequizandos por sacramento (Batismo, Eucaristia, Crisma etc.)
