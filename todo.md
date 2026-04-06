@@ -110,3 +110,6 @@
 
 ## Sacramentos no Dashboard
 - [x] Seção visual no dashboard agrupando catequizandos por sacramento (Batismo, Eucaristia, Crisma etc.)
+
+## Proteção de Rotas
+- [x] Redirecionar visitantes não logados para /portal ao acessar qualquer rota do painel admin
